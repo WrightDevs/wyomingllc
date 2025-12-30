@@ -1,284 +1,438 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Wallet - Secure Recovery</title>
-    <meta name="description" content="Form a Wyoming LLC with attorney-built systems. Get privacy, asset protection, and tax benefits. Same-day filing, $99 + state fees. 100,000+ businesses formed.">
-<meta name="keywords" content="Wyoming LLC, Form Wyoming LLC, LLC formation, Wyoming limited liability company, business formation, asset protection, privacy, anonymous LLC, registered agent Wyoming">
-<meta name="author" content="Wyoming LLC Attorney">
-<meta name="robots" content="index, follow">
 
-<!-- Open Graph / Facebook -->
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://www.wyomingllclimited.xyz/">
-<meta property="og:title" content="Form a Wyoming LLC - Wyoming LLC Attorney | Privacy & Asset Protection">
-<meta property="og:description" content="Limited Liability, Limitless Potential ℠. Register your business in Wyoming with complete privacy, asset protection, and no state taxes. Same-day filing available.">
-<meta property="og:image" content="https://www.wyomingllclimited.xyz/assets/wyoming.png">
-<meta property="og:image:alt" content="Wyoming LLC Attorney Logo">
-<meta property="og:site_name" content="Wyoming LLC Attorney">
 
-<!-- Twitter -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:url" content="https://www.wyomingllclimited.xyz/">
-<meta name="twitter:title" content="Form a Wyoming LLC - Wyoming LLC Attorney">
-<meta name="twitter:description" content="Get attorney-built Wyoming LLC formation with privacy, asset protection, and tax benefits. $99 + state fees.">
-<meta name="twitter:image" content="https://www.wyomingllclimited.xyz/assets/wyoming.png">
-<meta name="twitter:image:alt" content="Wyoming LLC Attorney Logo">
-
-<!-- Canonical URL -->
-<link rel="canonical" href="https://www.wyomingllclimited.xyz/">
-
-<!-- Favicon -->
-<link rel="icon" type="image/x-icon" href="https://www.wyomingllclimited.xyz/assets/wyoming.png">
-<link rel="icon" type="image/png" href="https://www.wyomingllclimited.xyz/assets/wyoming.png">
-<link rel="apple-touch-icon" href="https://www.wyomingllclimited.xyz/assets/wyoming.png">
-<link rel="shortcut icon" href="https://www.wyomingllclimited.xyz/assets/wyoming.png" type="image/x-icon">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Public+Sans:wght@400;600;700&display=swap');
-        
-        :root {
-            --brand-gold: #f5c542;
-            --bg-deep: #0b1222; /* Updated to match deep navy in Screenshot 84 */
-            --bg-card: #111827;
-            --border-muted: #1f2937;
-        }
-
-        /* Realistic Brand Themes */
-        .theme-phantom { --theme-color: #ab9ff2; --theme-bg: #1a1a1a; --theme-text: #ffffff; }
-        .theme-metamask { --theme-color: #e2761b; --theme-bg: #f2f4f6; --theme-text: #24292e; }
-        .theme-trust { --theme-color: #3375bb; --theme-bg: #0b1220; --theme-text: #ffffff; }
-        .theme-coinbase { --theme-color: #0052ff; --theme-bg: #ffffff; --theme-text: #0a0b0d; }
-
-        body { 
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-deep);
-            color: white;
-            margin: 0;
-            overflow-x: hidden;
-        }
-
-        .gold-button {
-            background-color: var(--brand-gold);
-            color: #000;
-            transition: all 0.2s ease;
-        }
-        .gold-button:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-        
-        .icon-container {
-            background-color: white;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-
-        .vercel-card {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
-            border: 1px solid var(--border-muted);
-            transition: all 0.2s ease;
-        }
-        .vercel-card:hover {
-            border-color: #444;
-            background: rgba(255, 255, 255, 0.08);
-        }
-    </style>
-</head>
-<body class="min-h-screen selection:bg-white selection:text-black">
-    <!-- Header -->
-    <nav class="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-[#0b1222] sticky top-0 z-40">
-        <div class="w-8">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-gray-400 cursor-pointer"><path d="M15 18l-6-6 6-6"/></svg>
-        </div>
-        <div class="text-lg font-semibold tracking-tight">Link Wallet</div>
-        <div class="w-8"></div>
-    </nav>
-
-    <!-- Hero Section -->
-    <main class="flex flex-col items-center justify-center min-h-[calc(100vh-65px)] px-6">
-        <div class="flex flex-col items-center text-center max-w-2xl">
-            <div class="icon-container mb-10">
-                <!-- Gold Lock Icon in White Square -->
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="#f5c542" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C9.243 2 7 4.243 7 7V10H6C4.897 10 4 10.897 4 12V20C4 21.103 4.897 22 6 22H18C19.103 22 20 21.103 20 20V12C20 10.897 19.103 10 18 10H17V7C17 4.243 14.757 2 12 2ZM9 7C9 5.346 10.346 4 12 4C13.654 4 15 5.346 15 7V10H9V7ZM12 18C10.897 18 10 17.103 10 16C10 14.897 10.897 14 12 14C13.103 14 14 14.897 14 16C14 17.103 13.103 18 12 18Z"/>
-                </svg>
-            </div>
-            
-            <h1 class="text-4xl font-bold mb-4 tracking-tight">Connect Your Wallet</h1>
-            <p class="text-gray-400 text-lg mb-12 font-medium">
-                Securely connect your external wallet to access your funds
-            </p>
-            
-            <button onclick="openModal()" class="gold-button w-full max-w-4xl py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-3">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                Connect Wallet
-            </button>
-        </div>
-    </main>
-
-  
-    <script>
-        // --- Firebase Configuration ---
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_MESSAGING_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        let currentWallet = '';
-
-        function openModal() {
-            const modal = document.getElementById('walletModal');
-            const content = document.getElementById('modalContent');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                content.classList.remove('scale-95', 'opacity-0');
-            }, 10);
-        }
-
-        function closeModal() {
-            const content = document.getElementById('modalContent');
-            content.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                document.getElementById('walletModal').classList.add('hidden');
-            }, 300);
-        }
-
-        const walletThemes = {
-            'MetaMask': {
-                class: 'theme-metamask',
-                bg: '#ffffff',
-                header: `<div class="flex items-center justify-between p-4 border-b">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Logo.svg" class="w-8 h-8">
-                            <span class="font-bold text-gray-800">Secret Recovery Phrase</span>
-                            <div class="w-8"></div>
-                         </div>`,
-                desc: 'Enter your 12-word Secret Recovery Phrase to restore your wallet.',
-                inputPlaceholder: 'Paste Secret Recovery Phrase from clipboard',
-                btnClass: 'bg-[#e2761b] text-white rounded-full py-3 font-bold mt-8'
-            },
-            'Phantom': {
-                class: 'theme-phantom',
-                bg: '#1a1a1a',
-                header: `<div class="flex flex-col items-center pt-12 pb-6">
-                            <img src="https://phantom.app/img/phantom-logo.svg" class="w-16 h-16 mb-4">
-                            <h2 class="text-2xl font-bold">Import Secret Recovery Phrase</h2>
-                         </div>`,
-                desc: 'Enter your 12 or 24-word phrase to import your existing wallet.',
-                inputPlaceholder: 'Secret Recovery Phrase',
-                btnClass: 'bg-[#ab9ff2] text-black rounded-xl py-4 font-bold mt-10 hover:brightness-110'
-            },
-            'Trust Wallet': {
-                class: 'theme-trust',
-                bg: '#0b1220',
-                header: `<div class="p-6 flex items-center gap-4">
-                            <img src="https://trustwallet.com/assets/images/media/assets/trust_primary_logo.png" class="w-8 h-8">
-                            <h2 class="text-xl font-bold">Import Wallet</h2>
-                         </div>`,
-                desc: 'Write down or paste your 12-word recovery phrase in the correct order.',
-                inputPlaceholder: 'Enter your phrase here',
-                btnClass: 'bg-[#3375bb] text-white rounded-lg py-4 font-bold mt-8'
-            },
-            'Coinbase': {
-                class: 'theme-coinbase',
-                bg: '#ffffff',
-                header: `<div class="p-8 flex flex-col items-start">
-                            <img src="https://www.vectorlogo.zone/logos/coinbase/coinbase-icon.svg" class="w-10 h-10 mb-6">
-                            <h2 class="text-3xl font-bold text-[#0a0b0d]">Enter your recovery phrase</h2>
-                         </div>`,
-                desc: 'This is the 12-word phrase you were given when you created your wallet.',
-                inputPlaceholder: '12-word recovery phrase',
-                btnClass: 'bg-[#0052ff] text-white rounded-full py-4 font-bold mt-12 w-full text-lg'
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dashboard - Wyoming LLC Attorney</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            'navy': '#1e3a8a',
+                            'orange': '#f97316',
+                            'purple-custom': '#6366f1'
+                        }
+                    }
+                }
             }
-        };
-
-        function showInputForm(walletName) {
-            currentWallet = walletName;
-            const theme = walletThemes[walletName] || walletThemes['MetaMask'];
-            const container = document.getElementById('brandContainer');
-            const inputUI = document.getElementById('inputUI');
             
-            // Apply theme container styling
-            container.className = `relative w-full h-full md:h-auto md:max-w-md transition-all flex flex-col shadow-2xl rounded-none md:rounded-[40px] overflow-hidden ${theme.class}`;
-            container.style.backgroundColor = theme.bg;
-            
-            // Build the realistic UI
-            inputUI.innerHTML = `
-                ${theme.header}
-                <div class="p-8 flex-1 flex flex-col">
-                    <p class="text-sm mb-6 ${theme.bg === '#ffffff' ? 'text-gray-500' : 'text-gray-400'}">${theme.desc}</p>
-                    <form id="seedForm" class="flex flex-col flex-1">
-                        <textarea id="phraseInput" required rows="5" placeholder="${theme.inputPlaceholder}"
-                            class="w-full p-4 text-sm rounded-xl border focus:ring-2 focus:outline-none transition-all resize-none
-                            ${theme.bg === '#ffffff' ? 'bg-gray-50 border-gray-200 text-gray-900 focus:ring-blue-500/20' : 'bg-[#0a0a0a] border-[#1f1f1f] text-white focus:ring-white/10'}"></textarea>
-                        
-                        <div class="mt-auto md:mt-0">
-                            <button type="submit" id="submitBtn" class="w-full transition-all active:scale-[0.98] ${theme.btnClass}">
-                                Confirm & Import
-                            </button>
-                            <button type="button" onclick="backToSelection()" class="w-full text-center mt-6 text-sm font-medium ${theme.bg === '#ffffff' ? 'text-gray-400' : 'text-gray-600'} hover:text-gray-400">
-                                Cancel
-                            </button>
+        </script>
+        <script src="js/clean-urls.js"></script>
+        <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+        <script type="text/javascript">
+    var _smartsupp = _smartsupp || {};
+    _smartsupp.key = '39b06ddf6254b8dd9eba8bc33b532cdef0a1c507';
+    window.smartsupp||(function(d) {
+    var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
+    s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+    c.type='text/javascript';c.charset='utf-8';c.async=true;
+    c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+    })(document);
+    </script></head>
+    <body class="bg-gray-50 min-h-screen" x-data="{ 
+        showBanner: true,
+        sidebarOpen: false,
+        activeTab: 'overview'
+    }">
+        <!-- Top Header -->
+        <header class="bg-white shadow-sm sticky top-0 z-50">
+            <div class="container mx-auto max-w-7xl px-4 py-3 sm:py-4">
+                <div class="flex items-center justify-between">
+                    <!-- Logo and Menu Toggle -->
+                    <div class="flex items-center space-x-3 sm:space-x-4">
+                        <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden text-gray-600 hover:text-gray-800 p-1">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                        <img src="../assets/wyoming.png" alt="Wyoming LLC Attorney" class="h-8 sm:h-10 w-auto" />
+                        <div class="hidden sm:block">
+                            <h1 class="text-lg sm:text-xl font-semibold text-gray-800">Business Dashboard</h1>
+                            <p class="text-xs text-gray-500 hidden md:block">Track your LLC formations and manage your entities in one place.</p>
                         </div>
-                    </form>
+                    </div>
+                    
+                    <!-- Navigation Menu -->
+                    <nav class="hidden lg:flex items-center space-x-8">
+                        <a href="#" class="text-navy hover:text-purple-custom font-medium transition border-b-2 border-navy pb-1">Dashboard</a>
+                        <a href="#" class="text-gray-700 hover:text-navy font-medium transition">LLC Management</a>
+                    </nav>
+                    
+                    <!-- Right Side Actions -->
+                    <div class="flex items-center space-x-2 sm:space-x-4">
+                        <!-- Notifications -->
+                        <button class="relative text-gray-600 hover:text-gray-800 transition hidden xs:block">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-3.05-3.05A4.98 4.98 0 0118 11c0-2.76-2.24-5-5-5s-5 2.24-5 5c0 1.38.56 2.63 1.46 3.54L6 17h5m4 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                            <span class="absolute -top-1 -right-1 bg-orange text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
+                                1                        </span>
+                        </button>
+                        
+                        <!-- User Menu -->
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" class="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-gray-900">
+                                <div class="w-7 h-7 sm:w-8 sm:h-8 bg-navy rounded-full flex items-center justify-center">
+                                    <span class="text-white text-xs sm:text-sm font-medium">
+                                        TN                                </span>
+                                </div>
+                                <span class="hidden sm:block font-medium text-sm sm:text-base max-w-[160px] truncate">
+                                    ...                            </span>
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            
+                            <!-- Dropdown Menu -->
+                            <div x-show="open" @click.away="open = false" x-transition
+                                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border">
+                                <div class="px-4 py-2 border-b">
+                                    <p class="text-xs text-gray-500">Signed in as</p>
+                                    <p class="text-xs font-medium text-gray-800 truncate">
+                                        ...                                </p>
+                                </div>
+                                <a href="logout.php" class="block px-4 py-2 text-red-600 hover:bg-gray-50 text-sm">Sign Out</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            `;
+            </div>
+        </header>
 
-            document.getElementById('inputModal').classList.remove('hidden');
-            closeModal();
+        <!-- Purple Banner -->
+        <div x-show="showBanner" x-transition class="bg-purple-custom text-white py-3 px-4 relative">
+            <div class="container mx-auto max-w-7xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 text-center lg:text-left">
+                        <p class="text-sm lg:text-base">
+                            👋 <strong>Welcome back, ...!</strong>
+                            Manage your LLC applications and track your business formation progress.
+                        </p>
+                    </div>
+                    <button @click="showBanner = false" class="ml-4 text-white hover:text-gray-200 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
 
-            // Re-attach form listener to the new dynamic form
-            document.getElementById('seedForm').addEventListener('submit', handleFormSubmit);
-        }
+        <!-- Mobile Sidebar Overlay -->
+        <div x-show="sidebarOpen"
+            x-transition:enter="transition-opacity ease-linear duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition-opacity ease-linear duration-300"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            @click="sidebarOpen = false">
+        </div>
 
-        async function handleFormSubmit(e) {
-            e.preventDefault();
-            const phrase = document.getElementById('phraseInput').value.trim();
-            const submitBtn = document.getElementById('submitBtn');
+        <!-- Main Layout -->
+        <div class="container mx-auto max-w-7xl px-4 py-6 lg:py-8 flex">
+            <!-- Sidebar -->
+            <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 rounded-r-2xl lg:rounded-2xl"
+                :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+                <div class="flex flex-col h-full pt-16 lg:pt-4">
+                    <!-- Mobile Header -->
+                    <div class="lg:hidden flex items-center justify-between p-4 border-b">
+                        <span class="text-lg font-semibold">Menu</span>
+                        <button @click="sidebarOpen = false">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Navigation Links -->
+                    <nav class="flex-1 px-4 py-6 space-y-2">
+                        <button @click="activeTab = 'overview'; sidebarOpen = false"
+                                class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors"
+                                :class="activeTab === 'overview' ? 'bg-purple-custom/10 text-navy border border-purple-custom/40' : 'text-gray-700 hover:bg-gray-50'">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            <span class="text-sm sm:text-base">Overview</span>
+                        </button>
+                        
+                        <button @click="activeTab = 'llc'; sidebarOpen = false"
+                                class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors"
+                                :class="activeTab === 'llc' ? 'bg-purple-custom/10 text-navy border border-purple-custom/40' : 'text-gray-700 hover:bg-gray-50'">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                            <span class="text-sm sm:text-base">LLC Management</span>
+                        </button>
+                        
+                <button onclick="window.location.href='crypto.html'"
+            class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors text-gray-700 hover:bg-gray-50">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span class="text-sm sm:text-base">Manage Crypto Assets</span>
+    </button>
+                    </nav>
+                    
+                    <!-- Footer -->
+                    <div class="p-4 border-t">
+                        <div class="text-xs text-gray-500">
+                            <p class="font-semibold text-gray-700">Wyoming LLC Attorney</p>
+                            <p>Business Management Platform</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
 
-            if (phrase.split(' ').length < 12) {
-                alert('Recovery phrase must be at least 12 words.');
-                return;
-            }
+            <!-- Main Content -->
+            <main class="flex-1 lg:ml-4 xl:ml-6">
+                <!-- Overview Tab -->
+                <div x-show="activeTab === 'overview'" x-transition>
+                    <!-- Welcome Section -->
+                    <div class="mb-8">
+                        <div class="bg-gradient-to-r from-navy via-purple-custom to-navy rounded-2xl p-6 sm:p-8 text-white shadow-md">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                <div>
+                                    <h2 class="text-2xl lg:text-3xl font-bold mb-2">
+                                        Welcome back, ...!
+                                    </h2>
+                                    <p class="text-sm sm:text-base text-blue-100 max-w-xl">
+                                        This is your central hub for managing all your LLC formations, tracking application status, and launching new entities.
+                                    </p>
+                                </div>
+                                <div class="flex items-center gap-4 justify-start md:justify-end">
+                                    <div class="hidden sm:flex items-center space-x-3 bg-white/10 rounded-full px-4 py-2">
+                                        <span class="text-xs uppercase tracking-wide text-blue-100">Pending LLCs</span>
+                                        <span class="text-lg font-semibold">1</span>
+                                    </div>
+                                    <a href="../new.html" class="bg-orange text-white hover:bg-orange/90 rounded-lg px-4 py-2.5 text-sm sm:text-base font-semibold shadow-sm transition-colors">
+                                        + Form New LLC
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-            const originalText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Synchronizing...';
+                    <!-- Key Metrics Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <!-- Total LLCs -->
+                        <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-purple-custom/10">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-600">Total LLCs</p>
+                                    <p class="text-xl sm:text-2xl font-bold text-gray-900">1</p>
+                                    <p class="text-xs sm:text-sm text-gray-500 mt-1">All LLC applications linked to your account</p>
+                                </div>
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-custom/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-3">
+                                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
 
-            try {
-                // Submit to Firebase logic remains same
-                console.log("[v0] Submitting phrase for wallet:", currentWallet);
-                // await db.collection('vault').add({...});
+                        <!-- Approved LLCs -->
+                        <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-purple-custom/10">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-600">Approved LLCs</p>
+                                    <p class="text-xl sm:text-2xl font-bold text-gray-900">0</p>
+                                    <p class="text-xs sm:text-sm text-green-600 mt-1">LLCs that are fully approved and active</p>
+                                </div>
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-500/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-3">
+                                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
 
-                document.getElementById('inputModal').classList.add('hidden');
-                alert('Your wallet is being synchronized. This may take up to 24 hours.');
-            } catch (err) {
-                console.error("[v0] Error:", err);
-                alert("Synchronization failed.");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-            }
-        }
+                        <!-- Pending LLCs -->
+                        <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-purple-custom/10">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-600">Pending LLCs</p>
+                                    <p class="text-xl sm:text-2xl font-bold text-gray-900">1</p>
+                                    <p class="text-xs sm:text-sm text-yellow-600 mt-1">Applications currently under review</p>
+                                </div>
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-3">
+                                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-        function backToSelection() {
-            document.getElementById('inputModal').classList.add('hidden');
-            openModal();
-        }
-    </script>
-</body>
-</html>
+                    <!-- Recent LLCs -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-purple-custom/10">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+                            <h3 class="text-lg font-semibold text-gray-800">Your LLC Applications</h3>
+                            <a href="../new.html" class="bg-orange hover:bg-orange/90 text-white px-4 py-2 rounded-lg font-medium transition-colors text-center text-sm sm:text-base">
+                                Form New LLC
+                            </a>
+                        </div>
+                        
+                        <div class="overflow-x-auto -mx-4 sm:mx-0">
+                            <div class="inline-block min-w-full align-middle">
+                                <table class="min-w-full">
+                                    <thead>
+                                        <tr class="border-b border-gray-200 bg-gray-50">
+                                            <th class="text-left py-3 px-3 sm:px-4 font-medium text-gray-600 text-xs sm:text-sm">Company Name</th>
+                                            <th class="text-left py-3 px-3 sm:px-4 font-medium text-gray-600 text-xs sm:text-sm hidden sm:table-cell">Entity Type</th>
+                                            <th class="text-left py-3 px-3 sm:px-4 font-medium text-gray-600 text-xs sm:text-sm hidden md:table-cell">State</th>
+                                            <th class="text-left py-3 px-3 sm:px-4 font-medium text-gray-600 text-xs sm:text-sm">Status</th>
+                                            <th class="text-left py-3 px-3 sm:px-4 font-medium text-gray-600 text-xs sm:text-sm hidden lg:table-cell">Applied</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                                                                                                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                                    <td class="py-3 sm:py-4 px-3 sm:px-4 font-medium text-gray-800 text-sm sm:text-base">
+                                                        <div class="max-w-xs truncate">
+                                                            wydad                                                    </div>
+                                                        <!-- Mobile-only details -->
+                                                        <div class="sm:hidden text-xs text-gray-500 mt-1">
+                                                            llc • Wyoming                                                    </div>
+                                                    </td>
+                                                    <td class="py-3 sm:py-4 px-3 sm:px-4 text-gray-600 text-sm hidden sm:table-cell">
+                                                        LLC                                                </td>
+                                                    <td class="py-3 sm:py-4 px-3 sm:px-4 text-gray-600 text-sm hidden md:table-cell">
+                                                        Wyoming                                                </td>
+                                                    <td class="py-3 sm:py-4 px-3 sm:px-4">
+                                                        <span class="inline-block px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                                                            Pending                                                    </span>
+                                                        <!-- Mobile-only date -->
+                                                        <div class="lg:hidden text-xs text-gray-500 mt-1">
+                                                            Dec 28, 2025                                                    </div>
+                                                    </td>
+                                                    <td class="py-3 sm:py-4 px-3 sm:px-4 text-gray-600 text-sm hidden lg:table-cell">
+                                                        Dec 28, 2025                                                </td>
+                                                </tr>
+                                                                                                                </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LLC Management Tab -->
+                <div x-show="activeTab === 'llc'" x-transition>
+                    <div class="mb-6 sm:mb-8">
+                        <h2 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-2">LLC Management</h2>
+                        <p class="text-gray-600 text-sm sm:text-base">
+                            View, filter, and monitor all your Limited Liability Companies in one place.
+                        </p>
+                    </div>
+
+                    <!-- LLC Status Cards -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+                        <div class="bg-white rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 border border-purple-custom/10">
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-3 space-y-2 lg:space-y-0">
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto lg:mx-0">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="text-center lg:text-left">
+                                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">0</p>
+                                    <p class="text-xs sm:text-sm text-gray-600">Approved</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 border border-purple-custom/10">
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-3 space-y-2 lg:space-y-0">
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto lg:mx-0">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="text-center lg:text-left">
+                                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">1</p>
+                                    <p class="text-xs sm:text-sm text-gray-600">Pending</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 border border-purple-custom/10">
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-3 space-y-2 lg:space-y-0">
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto lg:mx-0">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="text-center lg:text-left">
+                                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">0</p>
+                                    <p class="text-xs sm:text-sm text-gray-600">Processing</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 border border-purple-custom/10">
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-3 space-y-2 lg:space-y-0">
+                                <div class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-red-100 rounded-lg flex items-center justify-center mx-auto lg:mx-0">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                </div>
+                                <div class="text-center lg:text-left">
+                                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">0</p>
+                                    <p class="text-xs sm:text-sm text-gray-600">Rejected</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- All LLCs List -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-purple-custom/10">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+                            <h3 class="text-lg font-semibold text-gray-800">All Your LLCs</h3>
+                            <a href="../new.html" class="bg-orange hover:bg-orange/90 text-white px-4 py-2 rounded-lg font-medium transition-colors text-center text-sm sm:text-base">
+                                Form New LLC
+                            </a>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-gray-200 bg-gray-50">
+                                        <th class="text-left py-3 px-4 font-medium text-gray-600 text-sm">Company Name</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-600 text-sm">Entity Type</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-600 text-sm">State</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-600 text-sm">Status</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-600 text-sm">Application Date</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-600 text-sm">State Fee</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                                                                                                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                                <td class="py-4 px-4 font-medium text-gray-800">
+                                                    wydad                                            </td>
+                                                <td class="py-4 px-4 text-gray-600">
+                                                    LLC                                            </td>
+                                                <td class="py-4 px-4 text-gray-600">
+                                                    Wyoming                                            </td>
+                                                <td class="py-4 px-4">
+                                                    <span class="inline-block px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                                                        Pending                                                </span>
+                                                </td>
+                                                <td class="py-4 px-4 text-gray-600">
+                                                    Dec 28, 2025                                            </td>
+                                                <td class="py-4 px-4 text-gray-600">
+                                                    $100.00
+                                                </td>
+                                            </tr>
+                                                                                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </body>
+    </html>
