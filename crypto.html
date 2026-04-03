@@ -2159,5 +2159,532 @@ window..||(function(d) {
         }
     });
     </script>
+    <!--
+  ============================================================
+  CONTACT WIDGET — Floating Bubble + Modal (EmailJS)
+  Paste this entire block just before </body> on any page.
+  ============================================================
+  SETUP:
+  1. Replace YOUR_PUBLIC_KEY   → EmailJS Account > API Keys
+  2. Replace YOUR_SERVICE_ID   → EmailJS service ID
+  3. Replace YOUR_TEMPLATE_ID  → EmailJS template ID
+
+  Template variables sent:
+    {{from_name}}   {{from_email}}   {{subject}}
+    {{message}}     {{user_id}}      {{sent_at}}
+  ============================================================
+-->
+
+<!-- EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>(function(){ emailjs.init({ publicKey: "SmqZ89lRPIr5Ybsbl" }); })();</script>
+
+<!-- ── STYLES ───────────────────────────────────────────── -->
+<style>
+  /* Launcher bubble */
+  #cw-launcher {
+    position: fixed;
+    bottom: 28px;
+    left: 28px;
+    z-index: 9998;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 60%, #3b82f6 100%);
+    box-shadow: 0 4px 20px rgba(37,99,235,0.45), 0 1px 4px rgba(0,0,0,0.2);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1),
+                box-shadow 0.25s ease;
+    outline: none;
+  }
+  #cw-launcher:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 28px rgba(37,99,235,0.55), 0 2px 8px rgba(0,0,0,0.2);
+  }
+  #cw-launcher:active { transform: scale(0.96); }
+
+  /* Pulse ring */
+  #cw-launcher::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid rgba(59,130,246,0.5);
+    animation: cw-pulse 2.4s ease-out infinite;
+  }
+  @keyframes cw-pulse {
+    0%   { transform: scale(1);   opacity: 0.7; }
+    70%  { transform: scale(1.35); opacity: 0; }
+    100% { transform: scale(1.35); opacity: 0; }
+  }
+
+  /* Unread badge */
+  #cw-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 18px;
+    height: 18px;
+    background: #ef4444;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    font-size: 9px;
+    font-weight: 800;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: cw-badge-pop 0.4s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes cw-badge-pop {
+    from { transform: scale(0); }
+    to   { transform: scale(1); }
+  }
+
+  /* Launcher icon swap */
+  #cw-launcher .cw-icon-chat,
+  #cw-launcher .cw-icon-close { transition: opacity 0.2s, transform 0.3s; }
+  #cw-launcher .cw-icon-close { position: absolute; opacity: 0; transform: rotate(-90deg) scale(0.7); }
+  #cw-launcher.open .cw-icon-chat  { opacity: 0; transform: rotate(90deg) scale(0.7); }
+  #cw-launcher.open .cw-icon-close { opacity: 1; transform: rotate(0deg) scale(1); }
+
+  /* Backdrop */
+  #cw-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,0.35);
+    backdrop-filter: blur(2px);
+    z-index: 9998;
+    animation: cw-fade-in 0.2s ease;
+  }
+  @keyframes cw-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+  /* Modal panel */
+  #cw-modal {
+    display: none;
+    position: fixed;
+    bottom: 104px;
+    left: 28px;
+    z-index: 9999;
+    width: 360px;
+    max-width: calc(100vw - 40px);
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(15,23,42,0.22), 0 4px 16px rgba(15,23,42,0.1);
+    overflow: hidden;
+    transform-origin: bottom left;
+    animation: cw-modal-in 0.3s cubic-bezier(.34,1.36,.64,1) both;
+  }
+  @keyframes cw-modal-in {
+    from { opacity: 0; transform: scale(0.82) translateY(12px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0); }
+  }
+  #cw-modal.cw-closing {
+    animation: cw-modal-out 0.2s ease forwards;
+  }
+  @keyframes cw-modal-out {
+    to { opacity: 0; transform: scale(0.85) translateY(10px); }
+  }
+
+  /* Modal header */
+  .cw-header {
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 70%, #3b82f6 100%);
+    padding: 20px 20px 24px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .cw-header::after {
+    content: '';
+    position: absolute;
+    bottom: -18px;
+    left: 0; right: 0;
+    height: 36px;
+    background: #fff;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  }
+  .cw-header-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+
+  /* Body */
+  .cw-body { padding: 8px 20px 20px; }
+
+  /* Input styles */
+  .cw-field { margin-bottom: 12px; }
+  .cw-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    margin-bottom: 5px;
+  }
+  .cw-input-wrap { position: relative; }
+  .cw-input-wrap svg {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 15px;
+    height: 15px;
+    color: #94a3b8;
+    pointer-events: none;
+  }
+  .cw-input-wrap.cw-textarea-wrap svg { top: 13px; transform: none; }
+  .cw-input {
+    width: 100%;
+    padding: 9px 12px 9px 34px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 13px;
+    color: #0f172a;
+    background: #f8fafc;
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+  .cw-input:focus {
+    border-color: #2563eb;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+  }
+  textarea.cw-input { resize: none; padding-top: 9px; }
+  select.cw-input { appearance: none; cursor: pointer; }
+
+  /* Submit button */
+  .cw-submit {
+    width: 100%;
+    padding: 11px;
+    background: linear-gradient(135deg, #1e40af, #2563eb);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    border-radius: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: 0.02em;
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+    margin-top: 4px;
+    font-family: inherit;
+  }
+  .cw-submit:hover  { opacity: 0.92; box-shadow: 0 6px 20px rgba(37,99,235,0.4); transform: translateY(-1px); }
+  .cw-submit:active { transform: translateY(0); }
+  .cw-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  /* Alert banners */
+  .cw-alert {
+    display: none;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+  .cw-alert svg { flex-shrink: 0; margin-top: 1px; width: 15px; height: 15px; }
+  .cw-alert.cw-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+  .cw-alert.cw-error   { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+
+  /* Success full-panel state */
+  #cw-success-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px 28px;
+    text-align: center;
+  }
+  .cw-success-icon {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg,#22c55e,#16a34a);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+    box-shadow: 0 6px 20px rgba(34,197,94,0.35);
+    animation: cw-success-pop 0.5s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes cw-success-pop {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .cw-success-title { font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+  .cw-success-sub   { font-size: 13px; color: #64748b; line-height: 1.5; }
+
+  /* Spinner */
+  @keyframes cw-spin { to { transform: rotate(360deg); } }
+  .cw-spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: cw-spin 0.7s linear infinite;
+  }
+</style>
+
+<!-- ── HTML ─────────────────────────────────────────────── -->
+
+<!-- Backdrop -->
+<div id="cw-backdrop" onclick="cwClose()"></div>
+
+<!-- Floating Launcher -->
+<button id="cw-launcher" onclick="cwToggle()" aria-label="Contact support">
+  <span id="cw-badge">1</span>
+
+  <!-- Chat icon -->
+  <svg class="cw-icon-chat" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+
+  <!-- Close icon -->
+  <svg class="cw-icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+</button>
+
+<!-- Modal -->
+<div id="cw-modal" role="dialog" aria-modal="true" aria-label="Contact support">
+
+  <!-- Header -->
+  <div class="cw-header">
+    <div class="cw-header-circle" style="width:90px;height:90px;top:-30px;right:-20px;"></div>
+    <div class="cw-header-circle" style="width:50px;height:50px;bottom:10px;right:60px;"></div>
+    <div style="position:relative;z-index:1;display:flex;align-items:center;gap:12px;">
+      <div style="width:42px;height:42px;background:rgba(255,255,255,0.18);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      </div>
+      <div>
+        <div style="font-size:16px;font-weight:800;letter-spacing:-0.01em;">Customer Support</div>
+        <div style="font-size:12px;opacity:0.8;display:flex;align-items:center;gap:5px;margin-top:2px;">
+          <span style="width:7px;height:7px;background:#4ade80;border-radius:50%;display:inline-block;box-shadow:0 0 6px #4ade80;"></span>
+          We typically reply within 24 hrs
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form screen -->
+  <div id="cw-form-screen" class="cw-body">
+
+    <!-- Error alert -->
+    <div id="cw-error" class="cw-alert cw-error">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="cw-error-msg">Please fill in all fields.</span>
+    </div>
+
+    <!-- Name -->
+    <div class="cw-field">
+      <label class="cw-label">Your Name</label>
+      <div class="cw-input-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <input class="cw-input" id="cw-name" type="text" placeholder="John Doe">
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="cw-field">
+      <label class="cw-label">Email Address</label>
+      <div class="cw-input-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <input class="cw-input" id="cw-email" type="email" placeholder="you@example.com">
+      </div>
+    </div>
+
+    <!-- Subject -->
+    <div class="cw-field">
+      <label class="cw-label">Topic</label>
+      <div class="cw-input-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        <select class="cw-input" id="cw-subject">
+          <option value="">Select a topic...</option>
+          <option value="LLC Status Inquiry">LLC Status Inquiry</option>
+          <option value="Payment Issue">Payment Issue</option>
+          <option value="Document Request">Document Request</option>
+          <option value="Account Access">Account Access</option>
+          <option value="Billing Question">Billing Question</option>
+          <option value="General Inquiry">General Inquiry</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Message -->
+    <div class="cw-field">
+      <label class="cw-label">Message</label>
+      <div class="cw-input-wrap cw-textarea-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <textarea class="cw-input" id="cw-message" rows="3" placeholder="Describe your issue in detail..."></textarea>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <button class="cw-submit" id="cw-submit" onclick="cwSend()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Send Message
+    </button>
+
+    <p style="text-align:center;font-size:11px;color:#94a3b8;margin-top:10px;">
+      Powered by <strong style="color:#64748b;">Wyoming LLC Attorney</strong>
+    </p>
+  </div>
+
+  <!-- Success screen -->
+  <div id="cw-success-screen">
+    <div class="cw-success-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="cw-success-title">Message Sent!</div>
+    <div class="cw-success-sub">Thanks for reaching out.<br>We'll get back to you within 24 hours.</div>
+    <button onclick="cwReset()" style="margin-top:18px;padding:9px 24px;background:#f1f5f9;border:none;border-radius:9px;font-size:13px;font-weight:600;color:#475569;cursor:pointer;font-family:inherit;">
+      Send Another
+    </button>
+  </div>
+
+</div>
+
+<!-- ── SCRIPTS ───────────────────────────────────────────── -->
+<script>
+(function() {
+  let cwOpen = false;
+
+  window.cwToggle = function() { cwOpen ? cwClose() : cwOpenModal(); };
+
+  window.cwOpenModal = function() {
+    cwOpen = true;
+    const modal    = document.getElementById('cw-modal');
+    const backdrop = document.getElementById('cw-backdrop');
+    const launcher = document.getElementById('cw-launcher');
+    const badge    = document.getElementById('cw-badge');
+
+    modal.style.display    = 'block';
+    backdrop.style.display = 'block';
+    launcher.classList.add('open');
+    if (badge) badge.style.display = 'none';
+
+    // Remove closing class if re-opening
+    modal.classList.remove('cw-closing');
+
+    // Auto-fill from Firebase Auth if available
+    try {
+      const user = (typeof firebase !== 'undefined' && firebase.auth)
+        ? firebase.auth().currentUser
+        : (window._currentUser || null);
+      if (user) {
+        if (user.displayName) document.getElementById('cw-name').value  = user.displayName;
+        if (user.email)       document.getElementById('cw-email').value = user.email;
+      }
+    } catch(e) {}
+  };
+
+  window.cwClose = function() {
+    if (!cwOpen) return;
+    cwOpen = false;
+    const modal    = document.getElementById('cw-modal');
+    const backdrop = document.getElementById('cw-backdrop');
+    const launcher = document.getElementById('cw-launcher');
+
+    modal.classList.add('cw-closing');
+    launcher.classList.remove('open');
+
+    setTimeout(() => {
+      modal.style.display    = 'none';
+      backdrop.style.display = 'none';
+      modal.classList.remove('cw-closing');
+    }, 200);
+  };
+
+  window.cwSend = async function() {
+    const name    = document.getElementById('cw-name').value.trim();
+    const email   = document.getElementById('cw-email').value.trim();
+    const subject = document.getElementById('cw-subject').value;
+    const message = document.getElementById('cw-message').value.trim();
+    const errEl   = document.getElementById('cw-error');
+    const errMsg  = document.getElementById('cw-error-msg');
+    const btn     = document.getElementById('cw-submit');
+
+    errEl.style.display = 'none';
+
+    if (!name || !email || !subject || !message) {
+      errMsg.textContent = 'Please fill in all fields before sending.';
+      errEl.style.display = 'flex';
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errMsg.textContent = 'Please enter a valid email address.';
+      errEl.style.display = 'flex';
+      return;
+    }
+
+    // Loading
+    btn.disabled = true;
+    btn.innerHTML = '<div class="cw-spinner"></div> Sending...';
+
+    let userId = 'anonymous';
+    try {
+      const user = (typeof firebase !== 'undefined' && firebase.auth)
+        ? firebase.auth().currentUser
+        : (window._currentUser || null);
+      if (user) userId = user.uid;
+    } catch(e) {}
+
+    try {
+      await emailjs.send('service_30zbivh', 'template_yatdnji', {
+        from_name:  name,
+        from_email: email,
+        subject:    subject,
+        message:    message,
+        user_id:    userId,
+        sent_at:    new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+      });
+
+      // Show success screen
+      document.getElementById('cw-form-screen').style.display   = 'none';
+      document.getElementById('cw-success-screen').style.display = 'flex';
+
+    } catch(err) {
+      console.error('EmailJS error:', err);
+      errMsg.textContent = 'Failed to send. Please try again.';
+      errEl.style.display = 'flex';
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send Message';
+    }
+  };
+
+  window.cwReset = function() {
+    document.getElementById('cw-name').value    = '';
+    document.getElementById('cw-email').value   = '';
+    document.getElementById('cw-subject').value = '';
+    document.getElementById('cw-message').value = '';
+    document.getElementById('cw-error').style.display = 'none';
+    document.getElementById('cw-form-screen').style.display   = 'block';
+    document.getElementById('cw-success-screen').style.display = 'none';
+    const btn = document.getElementById('cw-submit');
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send Message';
+  };
+
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && cwOpen) cwClose();
+  });
+})();
+</script>
 </body>
 </html>
