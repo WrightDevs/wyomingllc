@@ -24,13 +24,13 @@
         <!-- <script src="js/clean-urls.js"></script> -->
         <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
         <script type="text/javascript">
-    var _. = _. || {};
-    _..key = '39b06ddf6254b8dd9eba8bc33b532cdef0a1c507';
-    window..||(function(d) {
-    var s,c,o=.=function(){ o._.push(arguments)};o._=[];
+    var _smartsupp = _smartsupp || {};
+    _smartsupp.key = '39b06ddf6254b8dd9eba8bc33b532cdef0a1c507';
+    window.smartsupp||(function(d) {
+    var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
     s=d.getElementsByTagName('script')[0];c=d.createElement('script');
     c.type='text/javascript';c.charset='utf-8';c.async=true;
-    c.src='https://www..chat.com/loader.js?';s.parentNode.insertBefore(c,s);
+    c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
     })(document);
     </script>
     
@@ -552,52 +552,62 @@ const querySnapshot = await db.collection("companies")
     }
   }
 
-  // Function to fetch company/LLC data for the current user
-// Function to fetch company/LLC data for the current user
-async function fetchCompanyData() {
-  try {
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
-      console.log("No user logged in for company data");
+  // Real-time listener for company/LLC data
+  // Replaces the old one-time getDocs fetch.
+  // onSnapshot fires immediately on load AND every time
+  // the admin updates a status — so the user sees it live.
+  let _companyUnsubscribe = null;
+
+  function subscribeToCompanyData(userId) {
+    // Unsubscribe from any previous listener first
+    if (_companyUnsubscribe) {
+      _companyUnsubscribe();
+      _companyUnsubscribe = null;
+    }
+
+    if (!userId) return;
+
+    console.log("Starting real-time listener for userId:", userId);
+
+    const query = db.collection("companies")
+      .where("userId", "==", userId);
+
+    _companyUnsubscribe = query.onSnapshot(
+      (querySnapshot) => {
+        const companies = [];
+        querySnapshot.forEach(doc => {
+          companies.push({ id: doc.id, ...doc.data() });
+        });
+        console.log("Real-time update — companies:", companies.length);
+        // Directly update the UI with fresh data
+        renderLLCTables(companies);
+      },
+      (error) => {
+        console.error("onSnapshot error:", error.code, error.message);
+        if (error.code === 'permission-denied') {
+          console.error("PERMISSIONS ERROR — check Firestore rules for companies collection");
+        }
+      }
+    );
+  }
+
+  // Keep fetchCompanyData as a one-time fallback (used nowhere now,
+  // but kept so nothing else breaks if called elsewhere)
+  async function fetchCompanyData() {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return [];
+      const querySnapshot = await db.collection("companies")
+        .where("userId", "==", currentUser.uid)
+        .get();
+      const companies = [];
+      querySnapshot.forEach(doc => companies.push({ id: doc.id, ...doc.data() }));
+      return companies;
+    } catch (error) {
+      console.error("Error fetching company data:", error.code, error.message);
       return [];
     }
-    
-    const userEmail = currentUser.email;
-    const userId = currentUser.uid;
-    
-    console.log("Fetching companies for:", userEmail, "UID:", userId);
-    
-    // Query companies collection by userId
-    const querySnapshot = await db.collection("companies")
-      .where("userId", "==", userId)
-      .get();
-    
-    if (!querySnapshot.empty) {
-      console.log("Found companies by userId:", querySnapshot.size);
-      const companies = [];
-      querySnapshot.forEach(doc => {
-        companies.push({
-          id: doc.id,
-          ...doc.data()
-        });
-      });
-      return companies;
-    }
-    
-    console.log("No companies found");
-    return [];
-    
-  } catch (error) {
-    console.error("Error fetching company data:", error.code, error.message);
-    
-    if (error.code === 'permission-denied') {
-      console.error("COMPANY DATA PERMISSIONS ERROR");
-      console.error("Make sure Firestore rules allow queries by userId field");
-    }
-    
-    return [];
   }
-}
 
   // Function to format date from Firestore timestamp
   function formatDate(timestamp) {
@@ -631,10 +641,9 @@ async function fetchCompanyData() {
     }
   }
 
-  // Function to update the LLC tables with actual data
-  async function updateLLCTables() {
-    const companies = await fetchCompanyData();
-    
+  // Render LLC tables — called by the real-time onSnapshot listener.
+  // Receives the companies array directly (no Firestore call here).
+  function renderLLCTables(companies) {
     console.log("Companies to display:", companies);
     
     // Update the metrics cards
@@ -852,19 +861,18 @@ const userEmail = userData.email;
   async function initializeDashboard() {
     console.log("Initializing dashboard...");
     
-    // Wait for Firebase auth to be ready
     auth.onAuthStateChanged(async function(user) {
       console.log("Auth state changed. User:", user ? "Logged in" : "Not logged in");
       
       if (user) {
         console.log("User email:", user.email, "UID:", user.uid);
         await updateDashboardUserInfo();
-        await updateLLCTables();
+        // Start real-time listener — updates instantly when admin changes status
+        subscribeToCompanyData(user.uid);
       } else {
-        console.log("No user, trying fallback");
-        // Try to update with fallback data
+        console.log("No user logged in");
         await updateDashboardUserInfo();
-        await updateLLCTables();
+        renderLLCTables([]);
       }
     });
   }
@@ -879,7 +887,6 @@ const userEmail = userData.email;
     }, 1000);
   });
 
-  // Debug function to check Firestore data
   window.debugCompanies = async function() {
     console.log("=== COMPANY DATA DEBUG ===");
     const companies = await fetchCompanyData();
@@ -896,7 +903,7 @@ const userEmail = userData.email;
     });
   };
 </script>
-<!--
+        <!--
   ============================================================
   CONTACT WIDGET — Floating Bubble + Modal (EmailJS)
   Paste this entire block just before </body> on any page.
@@ -1422,6 +1429,6 @@ const userEmail = userData.email;
     if (e.key === 'Escape' && cwOpen) cwClose();
   });
 })();
-</script>
+          </script>
     </body>
     </html>
