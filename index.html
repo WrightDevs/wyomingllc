@@ -53,7 +53,6 @@
     "postalCode": "82801",
     "addressCountry": "US"
   },
-  "telephone": "+1-3**-***-****",
   "priceRange": "$99+",
   "areaServed": "Worldwide",
   "serviceType": "LLC Formation, Registered Agent, Business Formation",
@@ -86,24 +85,13 @@
   <!-- Alpine.js + Collapse plugin (for FAQs, mobile accordions) -->
   <script
     defer
-    src="https://unpkg.com/@alpinejs/collapse@3.x.x/dist/cdn.min.js"
+    src="https://unpkg.com/@alpinejs/collapse@3.13.10/dist/cdn.min.js"
   ></script>
   <script
     defer
-    src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
+    src="https://unpkg.com/alpinejs@3.13.10/dist/cdn.min.js"
   ></script>
 
-  <!-- . Live Chat script -->
-<script type="text/javascript">
-var _. = _. || {};
-_..key = '39b06ddf6254b8dd9eba8bc33b532cdef0a1c507';
-window..||(function(d) {
-  var s,c,o=.=function(){ o._.push(arguments)};o._=[];
-  s=d.getElementsByTagName('script')[0];c=d.createElement('script');
-  c.type='text/javascript';c.charset='utf-8';c.async=true;
-  c.src='https://www..chat.com/loader.js?';s.parentNode.insertBefore(c,s);
-})(document);
-</script>
 </head>
 <body class="bg-slate-50">
   <!-- Announcement Bar -->
@@ -178,27 +166,27 @@ window..||(function(d) {
                   LLC Formation
                 </div>
                 <a
-                  href="start.html"
+                  href="new.html"
                   class="block px-3 py-2 text-sm text-gray-700 hover:bg-slate-50"
                   >Wyoming LLC</a
                 >
                 <a
-                  href="start.html"
+                  href="new.html"
                   class="block px-3 py-2 text-sm text-gray-700 hover:bg-slate-50"
                   >Delaware LLC</a
                 >
                 <a
-                  href="start.html"
+                  href="new.html"
                   class="block px-3 py-2 text-sm text-gray-700 hover:bg-slate-50"
                   >New Mexico LLC</a
                 >
                 <a
-                  href="start.html"
+                  href="new.html"
                   class="block px-3 py-2 text-sm text-gray-700 hover:bg-slate-50"
                   >Florida LLC</a
                 >
                 <a
-                  href="start.html"
+                  href="new.html"
                   class="block px-3 py-2 text-sm text-gray-700 hover:bg-slate-50"
                   >Texas LLC</a
                 >
@@ -209,12 +197,12 @@ window..||(function(d) {
                   Registered Agent
                 </div>
                 <a
-                  href="start.html"
+                  href="#services"
                   class="block px-3 py-2 text-sm text-gray-700 hover:bg-slate-50"
                   >Wyoming Registered Agent</a
                 >
                 <a
-                  href="start.html"
+                  href="#services"
                   class="block px-3 py-2 text-sm text-gray-700 hover:bg-slate-50"
                   >Delaware Registered Agent</a
                 >
@@ -258,22 +246,22 @@ window..||(function(d) {
                   Resources
                 </div>
                 <a
-                  href="start.html"
+                  href="#benefits"
                   class="block px-3 py-2 text-sm text-gray-700 hover:bg-slate-50"
                   >LLC vs. Corporation</a
                 >
                 <a
-                  href="start.html"
+                  href="#services"
                   class="block px-3 py-2 text-sm text-gray-700 hover:bg-slate-50"
                   >Virtual Office &amp; Mail</a
                 >
                 <a
-                  href="start.html"
+                  href="#fees"
                   class="block px-3 py-2 text-sm text-gray-700 hover:bg-slate-50"
                   >Annual Reports</a
                 >
                 <a
-                  href="start.html"
+                  href="#services"
                   class="block px-3 py-2 text-sm text-gray-700 hover:bg-slate-50"
                   >DBA/Trade Name</a
                 >
@@ -284,7 +272,7 @@ window..||(function(d) {
                   Non-US Residents
                 </div>
                 <a
-                  href="start.html"
+                  href="#benefits"
                   class="block px-3 py-2 text-sm text-gray-700 hover:bg-slate-50"
                   >Learn More</a
                 >
@@ -293,28 +281,32 @@ window..||(function(d) {
           </div>
 
           <a
-            href="start.html"
+            href="#pricing"
             class="text-gray-600 hover:text-primary font-medium"
             >Pricing</a
           >
           <a
-            href="start.html"
+            href="#benefits"
             class="text-gray-600 hover:text-primary font-medium"
             >About</a
           >
           <a
-            href="start.html"
+            href="#contact"
             class="text-gray-600 hover:text-primary font-medium"
             >Contact</a
           >
 
-          <!-- Phone -->
-          <div class="flex items-center gap-2 pl-4 border-l border-gray-200">
+          <!-- Support: the live chat widget on this page -->
+          <button
+            type="button"
+            onclick="cwToggle()"
+            class="flex items-center gap-2 pl-4 border-l border-gray-200 text-left"
+          >
             <div class="text-xs">
               <div class="text-gray-500">Questions?</div>
-              <div class="font-bold text-primary">+1-3**-***-****</div>
+              <div class="font-bold text-primary">Chat with us</div>
             </div>
-          </div>
+          </button>
 
           <button
             onclick="window.location.href='login.html'"
@@ -388,19 +380,19 @@ window..||(function(d) {
               </svg>
             </button>
             <div x-show="open" class="mt-2 ml-4 space-y-2">
-              <a href="start.html" class="block text-sm text-gray-600"
+              <a href="new.html" class="block text-sm text-gray-600"
                 >Wyoming LLC</a
               >
-              <a href="start.html" class="block text-sm text-gray-600"
+              <a href="new.html" class="block text-sm text-gray-600"
                 >Delaware LLC</a
               >
-              <a href="start.html" class="block text-sm text-gray-600"
+              <a href="new.html" class="block text-sm text-gray-600"
                 >New Mexico LLC</a
               >
-              <a href="start.html" class="block text-sm text-gray-600"
+              <a href="new.html" class="block text-sm text-gray-600"
                 >Florida LLC</a
               >
-              <a href="start.html" class="block text-sm text-gray-600"
+              <a href="new.html" class="block text-sm text-gray-600"
                 >Texas LLC</a
               >
             </div>
@@ -428,28 +420,28 @@ window..||(function(d) {
               </svg>
             </button>
             <div x-show="open" class="mt-2 ml-4 space-y-2">
-              <a href="start.html" class="block text-sm text-gray-600"
+              <a href="#benefits" class="block text-sm text-gray-600"
                 >LLC vs. Corporation</a
               >
-              <a href="start.html" class="block text-sm text-gray-600"
+              <a href="#services" class="block text-sm text-gray-600"
                 >Virtual Office &amp; Mail</a
               >
-              <a href="start.html" class="block text-sm text-gray-600"
+              <a href="#fees" class="block text-sm text-gray-600"
                 >Annual Reports</a
               >
-              <a href="start.html" class="block text-sm text-gray-600"
+              <a href="#services" class="block text-sm text-gray-600"
                 >DBA/Trade Name</a
               >
             </div>
           </div>
 
-          <a href="start.html" class="block text-gray-700 font-medium"
+          <a href="#pricing" class="block text-gray-700 font-medium"
             >Pricing</a
           >
-          <a href="start.html" class="block text-gray-700 font-medium"
+          <a href="#benefits" class="block text-gray-700 font-medium"
             >About</a
           >
-          <a href="start.html" class="block text-gray-700 font-medium"
+          <a href="#contact" class="block text-gray-700 font-medium"
             >Contact</a
           >
 
@@ -790,7 +782,7 @@ window..||(function(d) {
   </section>
 
   <!-- Pricing Section -->
-  <section class="py-20 bg-gradient-to-br from-slate-50 to-slate-100">
+  <section id="pricing" class="scroll-mt-24 py-20 bg-gradient-to-br from-slate-50 to-slate-100">
     <div class="container mx-auto px-4">
       <div class="max-w-6xl mx-auto">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
@@ -1242,7 +1234,7 @@ window..||(function(d) {
   </section>
 
   <!-- Annual Fees Section -->
-  <section class="py-20 bg-white">
+  <section id="fees" class="scroll-mt-24 py-20 bg-white">
     <div class="container mx-auto px-4">
       <div class="max-w-5xl mx-auto">
         <div class="grid md:grid-cols-2 gap-12">
@@ -1282,7 +1274,7 @@ window..||(function(d) {
               Secretary of State.
             </p>
             <a
-              href="start.html"
+              href="#faq"
               class="text-primary hover:text-teal-700 font-semibold inline-flex items-center gap-2"
             >
               Read More
@@ -1338,7 +1330,7 @@ window..||(function(d) {
               personal tax rate.
             </p>
             <a
-              href="start.html"
+              href="#faq"
               class="text-primary hover:text-teal-700 font-semibold inline-flex items-center gap-2"
             >
               Read More
@@ -1372,7 +1364,7 @@ window..||(function(d) {
   </section>
 
   <!-- Turn-Key LLC Section -->
-  <section class="py-20 bg-gradient-to-br from-slate-100 to-slate-50">
+  <section id="services" class="scroll-mt-24 py-20 bg-gradient-to-br from-slate-100 to-slate-50">
     <div class="container mx-auto px-4">
       <div class="max-w-6xl mx-auto">
         <div class="text-center mb-12">
@@ -1700,7 +1692,7 @@ window..||(function(d) {
   </section>
 
   <!-- Benefits Section -->
-  <section class="py-20 bg-white">
+  <section id="benefits" class="scroll-mt-24 py-20 bg-white">
     <div class="container mx-auto px-4">
       <div class="max-w-6xl mx-auto">
         <div class="text-center mb-16">
@@ -2024,8 +2016,8 @@ window..||(function(d) {
   </section>
 
   <!-- FAQ Section -->
-  <section
-    class="py-20 bg-gradient-to-br from-slate-50 to-slate-100"
+  <section id="faq"
+    class="py-20 scroll-mt-24 bg-gradient-to-br from-slate-50 to-slate-100"
   >
     <div class="container mx-auto px-4">
       <div class="max-w-4xl mx-auto">
@@ -2535,7 +2527,7 @@ window..||(function(d) {
   </section>
 
   <!-- Footer -->
-  <footer
+  <footer id="contact"
     class="bg-gradient-to-br from-slate-900 to-slate-800 text-white py-12"
   >
     <div class="container mx-auto px-4">
@@ -2545,7 +2537,7 @@ window..||(function(d) {
         <div>
           <h3 class="text-lg font-bold mb-4 text-white">Contact Info</h3>
           <div class="space-y-2 text-gray-300 text-sm">
-            <p class="font-semibold">wyomingllclimited.pro</p>
+            <p class="font-semibold">wyomingllclimited.xyz</p>
             <p>1309 Coffeen Ave</p>
             <p>Sheridan, WY 82801</p>
             <div class="flex items-center gap-2 mt-4">
@@ -2566,7 +2558,13 @@ window..||(function(d) {
                   ></path>
                 </svg>
               </div>
-              <span class="font-semibold">+1 3**-***-****</span>
+              <button
+                type="button"
+                onclick="cwToggle()"
+                class="font-semibold hover:text-secondary transition"
+              >
+                Start a chat
+              </button>
             </div>
           </div>
         </div>
@@ -2575,32 +2573,32 @@ window..||(function(d) {
           <h3 class="text-lg font-bold mb-4 text-white">Services</h3>
           <ul class="space-y-2 text-gray-300 text-sm">
             <li>
-              <a href="start.html" class="hover:text-secondary transition"
+              <a href="new.html" class="hover:text-secondary transition"
                 >Form a Wyoming LLC</a
               >
             </li>
             <li>
-              <a href="start.html" class="hover:text-secondary transition"
+              <a href="#services" class="hover:text-secondary transition"
                 >Registered Agent</a
               >
             </li>
             <li>
-              <a href="start.html" class="hover:text-secondary transition"
+              <a href="#services" class="hover:text-secondary transition"
                 >Virtual Office</a
               >
             </li>
             <li>
-              <a href="start.html" class="hover:text-secondary transition"
+              <a href="#services" class="hover:text-secondary transition"
                 >Incorporation</a
               >
             </li>
             <li>
-              <a href="start.html" class="hover:text-secondary transition"
+              <a href="#services" class="hover:text-secondary transition"
                 >Mail Forwarding</a
               >
             </li>
             <li>
-              <a href="start.html" class="hover:text-secondary transition"
+              <a href="#benefits" class="hover:text-secondary transition"
                 >Asset Protection Trust</a
               >
             </li>
@@ -2611,32 +2609,32 @@ window..||(function(d) {
           <h3 class="text-lg font-bold mb-4 text-white">Resources</h3>
           <ul class="space-y-2 text-gray-300 text-sm">
             <li>
-              <a href="start.html" class="hover:text-secondary transition"
+              <a href="#benefits" class="hover:text-secondary transition"
                 >Series LLC</a
               >
             </li>
             <li>
-              <a href="start.html" class="hover:text-secondary transition"
+              <a href="#benefits" class="hover:text-secondary transition"
                 >Close LLC</a
               >
             </li>
             <li>
-              <a href="start.html" class="hover:text-secondary transition"
+              <a href="#benefits" class="hover:text-secondary transition"
                 >Holding Company Setup</a
               >
             </li>
             <li>
-              <a href="start.html" class="hover:text-secondary transition"
+              <a href="#benefits" class="hover:text-secondary transition"
                 >WY LLC vs. NV, DE &amp; NM LLCs</a
               >
             </li>
             <li>
-              <a href="start.html" class="hover:text-secondary transition"
+              <a href="#benefits" class="hover:text-secondary transition"
                 >Real Estate Holding Company</a
               >
             </li>
             <li>
-              <a href="start.html" class="hover:text-secondary transition"
+              <a href="#benefits" class="hover:text-secondary transition"
                 >What Is a Holding Company?</a
               >
             </li>
@@ -2649,12 +2647,12 @@ window..||(function(d) {
           </h3>
           <ul class="space-y-2 text-gray-300 text-sm">
             <li>
-              <a href="start.html" class="hover:text-secondary transition"
+              <a href="#faq" class="hover:text-secondary transition"
                 >Open a Bank Account</a
               >
             </li>
             <li>
-              <a href="start.html" class="hover:text-secondary transition"
+              <a href="#faq" class="hover:text-secondary transition"
                 >LLC for non-resident</a
               >
             </li>
@@ -2676,19 +2674,19 @@ window..||(function(d) {
           <div
             class="flex flex-wrap justify-center gap-6 text-gray-400 text-sm"
           >
-            <a href="start.html" class="hover:text-secondary transition"
+            <a href="#legal" class="hover:text-secondary transition"
               >Privacy Policy</a
             >
-            <a href="start.html" class="hover:text-secondary transition"
+            <a href="#legal" class="hover:text-secondary transition"
               >Terms of Service</a
             >
           </div>
         </div>
-        <div
+        <div id="legal"
           class="text-center text-gray-400 text-xs leading-relaxed"
         >
           <p>
-            "wyomingllclimited.pro is not a law firm and does not give legal
+            "wyomingllclimited.xyz is not a law firm and does not give legal
             advice. This website and any associated content is generalized,
             should not be considered applicable to your particular situation and
             does not provide advice concerning the particulars of your
