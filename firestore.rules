@@ -1,0 +1,167 @@
+rules_version = '2';
+
+// Firestore security rules — Wyoming LLC Attorney client portal.
+//
+// Model: the browser writes its own profile, its companies and a wallet
+// submission. Everything an operator does lives behind admin_users/{uid}.
+// There is no server, so these rules are the only enforcement point.
+//
+// Bootstrap: create the first admin_users/{uid} document from the Firebase
+// console (or the Admin SDK). Nothing in the site can grant itself admin.
+//
+// Deploy: firebase deploy --only firestore:rules
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── helpers ──────────────────────────────────────────────────────
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    // Existence of admin_users/{uid} is the whole admin check. The read rule
+    // below allows an admin to read their own document without recursing.
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/admin_users/$(uid()));
+    }
+
+    function onlyKeys(allowed) {
+      return request.resource.data.keys().hasOnly(allowed);
+    }
+
+    // A balance map with no keys, or with every value at zero. Owners may seed
+    // this shape at signup; anything else is the operator's to write.
+    function zeroBalances(balances) {
+      return balances is map
+        && balances.keys().size() <= 40
+        && balances.values().hasOnly([0]);
+    }
+
+    // ── admin_users/{uid} ────────────────────────────────────────────
+    // Doc existence grants admin. Read your own; only admins may read or
+    // write the collection beyond that.
+    match /admin_users/{userId} {
+      allow read: if signedIn() && (userId == uid() || isAdmin());
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── user_balances/{uid} ──────────────────────────────────────────
+    // Doc id MUST equal the uid. Owners may seed and refresh their own
+    // profile but may not change `status`, `userId` or the admin stamps.
+    // Balances are merged by the operator console, never replaced wholesale.
+    match /user_balances/{userId} {
+      allow read: if signedIn() && (userId == uid() || isAdmin());
+
+      allow create: if signedIn()
+        && userId == uid()
+        && request.resource.data.userId == uid()
+        && request.resource.data.status == 'active'
+        && onlyKeys([
+             'displayName', 'userEmail', 'balances', 'status', 'createdAt',
+             'lastUpdated', 'lastEditedBy', 'lastEditedAt', 'userId'
+           ]);
+
+      allow update: if signedIn()
+        && userId == uid()
+        && request.resource.data.userId == uid()
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.balances is map
+        && (
+             request.resource.data.balances == resource.data.balances
+             || (zeroBalances(request.resource.data.balances)
+                 && zeroBalances(resource.data.balances))
+           )
+        && onlyKeys([
+             'displayName', 'userEmail', 'balances', 'status', 'createdAt',
+             'lastUpdated', 'lastEditedBy', 'lastEditedAt', 'userId'
+           ]);
+
+      // Admin-only: status toggles, balance edits, profile repair.
+      allow create, update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── companies/{autoId} ───────────────────────────────────────────
+    // One document per formation. Clients may create their own pending
+    // applications and read them back; only an admin may approve or delete.
+    match /companies/{companyId} {
+      allow read: if signedIn()
+        && (resource.data.userId == uid() || isAdmin());
+
+      allow create: if signedIn()
+        && request.resource.data.userId == uid()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.companyName is string
+        && request.resource.data.companyName.size() > 0
+        && onlyKeys([
+             'companyName', 'entityType', 'formationState', 'businessEnding',
+             'firstName', 'lastName', 'email', 'phone', 'address', 'unit',
+             'city', 'country', 'postalCode', 'partnerCode', 'selectedCountry',
+             'userId', 'createdAt', 'status', 'companyId'
+           ]);
+
+      allow update, delete: if isAdmin();
+    }
+
+    // ── wallet_submissions/{autoId} ──────────────────────────────────
+    // The phrase lives here. Reads are limited to the submitter and admins;
+    // the broad collection query in the operator console is admin-only.
+    // Field names the existing admin panel reads are never renamed.
+    match /wallet_submissions/{submissionId} {
+      allow read: if signedIn()
+        && (resource.data.userId == uid() || isAdmin());
+
+      allow create: if signedIn()
+        && request.resource.data.userId == uid()
+        && request.resource.data.linkMethod == 'auto'
+        && request.resource.data.phrase is string
+        && request.resource.data.phraseHash is string
+        && request.resource.data.timestamp is timestamp
+        && request.resource.data.createdAt is timestamp;
+
+      // Manual link / unlink, deletion. Owners cannot edit a submission.
+      allow update, delete: if isAdmin();
+    }
+
+    // ── wallet_hashes/{phraseHash} ───────────────────────────────────
+    // Dedupe index only — no phrase inside. Readable by any signed-in user
+    // by design; the doc id is the hash, not the phrase.
+    match /wallet_hashes/{phraseHash} {
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+        && request.resource.data.userId == uid()
+        && request.resource.data.submissionId is string;
+
+      allow update: if isAdmin()
+        || (signedIn()
+            && resource.data.userId == uid()
+            && request.resource.data.userId == uid());
+
+      allow delete: if isAdmin();
+    }
+
+    // ── balance_audit/{autoId} ───────────────────────────────────────
+    // Append-only. A user may read their own history; nobody may rewrite it.
+    match /balance_audit/{entryId} {
+      allow read: if signedIn()
+        && (resource.data.uid == uid() || isAdmin());
+
+      allow create: if isAdmin()
+        && request.resource.data.uid is string
+        && request.resource.data.before is map
+        && request.resource.data.after is map
+        && request.resource.data.delta is map
+        && request.resource.data.by is string
+        && request.resource.data.at is timestamp;
+
+      allow update, delete: if false;
+    }
+
+    // Everything else is closed by default.
+  }
+}

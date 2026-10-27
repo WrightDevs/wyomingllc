@@ -1,0 +1,55 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/linkwalllet", "destination": "/dashboard", "permanent": true },
+    { "source": "/linkwalllet.html", "destination": "/dashboard", "permanent": true },
+    { "source": "/login.php", "destination": "/login", "permanent": true },
+    { "source": "/withdraw.php", "destination": "/withdraw", "permanent": true },
+    { "source": "/deposit.php", "destination": "/deposit", "permanent": true },
+    { "source": "/buy.php", "destination": "/buy", "permanent": true },
+    { "source": "/swap.php", "destination": "/swap", "permanent": true },
+    { "source": "/stake.php", "destination": "/stake", "permanent": true },
+    { "source": "/cards.php", "destination": "/cards", "permanent": true },
+    { "source": "/history2.php", "destination": "/history2", "permanent": true },
+    { "source": "/home.php", "destination": "/home", "permanent": true },
+    { "source": "/account.php", "destination": "/account", "permanent": true }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    },
+    {
+      "source": "/admin/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    },
+    {
+      "source": "/dashboard",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    },
+    {
+      "source": "/wallet",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    },
+    {
+      "source": "/crypto",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
+  ]
+}
