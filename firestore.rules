@@ -38,7 +38,7 @@ service cloud.firestore {
     function zeroBalances(balances) {
       return balances is map
         && balances.keys().size() <= 40
-        && balances.values().hasOnly([0]);
+        && (balances.keys().size() == 0 || balances.values().hasOnly([0]));
     }
 
     // ── admin_users/{uid} ────────────────────────────────────────────
