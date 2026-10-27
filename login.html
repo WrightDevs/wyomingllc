@@ -35,26 +35,6 @@
 <link rel="apple-touch-icon" href="https://www.wyomingllclimited.xyz/assets/wyoming.png">
 <link rel="shortcut icon" href="https://www.wyomingllclimited.xyz/assets/wyoming.png" type="image/x-icon">
 
-<!-- In login.html head -->
-<script>
-    // Check authentication status
-    firebase.auth().onAuthStateChanged((user) => {
-        if (user) {
-            // User is already logged in, redirect to dashboard
-            // But only if they just logged in, not if they're already on login page
-            const urlParams = new URLSearchParams(window.location.search);
-            const fromLogin = urlParams.get('fromLogin');
-            
-            if (!fromLogin) {
-                // Redirect to dashboard after a short delay
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1000);
-            }
-        }
-    });
-</script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -72,94 +52,12 @@
         }
       }
     </script>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <script type="text/javascript">
-      var _. = _. || {};
-      _..key = '39b06ddf6254b8dd9eba8bc33b532cdef0a1c507';
-      window..||(function(d) {
-        var s,c,o=.=function(){ o._.push(arguments)};o._=[];
-        s=d.getElementsByTagName('script')[0];c=d.createElement('script');
-        c.type='text/javascript';c.charset='utf-8';c.async=true;
-        c.src='https://www..chat.com/loader.js?';s.parentNode.insertBefore(c,s);
-      })(document);
-    </script>
-    
-    <!-- Firebase Initialization Script -->
-    <script>
-      // Initialize Firebase
-  // Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyCnBgSQy4SsvmR73iedkHCWKoseUyALS6s",
-    authDomain: "wyominglimited0.firebaseapp.com",
-    projectId: "wyominglimited0",
-    storageBucket: "wyominglimited0.firebasestorage.app",
-    messagingSenderId: "580988653712",
-    appId: "1:580988653712:web:c3b28d07bf8409f93ec815",
-    measurementId: "G-MT8SLSYM3S"
-};
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-      
-      // Initialize Firebase
-      firebase.initializeApp(firebaseConfig);
-      const auth = firebase.auth();
-      
-      // Check if user is already logged in
-      auth.onAuthStateChanged((user) => {
-        if (user) {
-          // User is signed in, redirect to dashboard
-          window.location.href = 'dashboard.html';
-        }
-      });
-      
-      // Google Sign-in function
-      function signInWithGoogle() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        provider.addScope('email');
-        provider.addScope('profile');
-        
-        auth.signInWithPopup(provider)
-          .then((result) => {
-            // This gives you a Google Access Token
-            const credential = result.credential;
-            const token = credential.accessToken;
-            const user = result.user;
-            
-            console.log('Google sign-in successful:', user);
-            window.location.href = 'user/home.php';
-          })
-          .catch((error) => {
-            console.error('Google sign-in error:', error);
-            const errorMessage = document.getElementById('error-message');
-            errorMessage.textContent = error.message;
-            errorMessage.classList.remove('hidden');
-          });
-      }
-      
-      // Verify token with backend (optional)
-      async function verifyTokenWithBackend(idToken) {
-        // If you have a backend, verify the token there
-        // Example:
-        /*
-        const response = await fetch('api/verify-token.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ token: idToken })
-        });
-        
-        const result = await response.json();
-        if (!result.success) {
-          throw new Error('Token verification failed');
-        }
-        */
-      }
-    </script>
+    <!-- Firebase SDKs (compat, pinned) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="https://unpkg.com/alpinejs@3.13.10/dist/cdn.min.js" defer></script>
   </head>
   <body class="bg-slate-50 min-h-screen flex flex-col"
         x-data="{ 
@@ -183,59 +81,23 @@ firebase.initializeApp(firebaseConfig);
             successMessage.classList.add('hidden');
             
             try {
-              // Sign in with Firebase
-              const userCredential = await auth.signInWithEmailAndPassword(this.email, this.password);
-              const user = userCredential.user;
+              const result = await Auth.loginWithEmail(this.email, this.password, this.remember);
               
-              // Set persistence if remember me is checked
-              if (this.remember) {
-                await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-              } else {
-                await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+              if (!result.success) {
+                this.showError(result.error || 'Login failed. Please try again.');
+                return;
               }
-              
-              // Get ID token for server-side verification if needed
-              const idToken = await user.getIdToken();
-              
-              // Optional: Send token to your backend for additional verification
-              // await verifyTokenWithBackend(idToken);
               
               successMessage.textContent = 'Login successful! Redirecting...';
               successMessage.classList.remove('hidden');
               
-              // Redirect to dashboard
               setTimeout(() => {
-                window.location.href = 'user/home.php';
-              }, 1000);
+                window.location.href = 'dashboard.html?fromLogin=1';
+              }, 700);
               
             } catch (error) {
-              console.error('Firebase login error:', error);
-              
-              // Handle different Firebase auth errors
-              let errorMessageText = 'Login failed. Please try again.';
-              
-              switch (error.code) {
-                case 'auth/invalid-email':
-                  errorMessageText = 'Invalid email address.';
-                  break;
-                case 'auth/user-disabled':
-                  errorMessageText = 'This account has been disabled.';
-                  break;
-                case 'auth/user-not-found':
-                  errorMessageText = 'No account found with this email.';
-                  break;
-                case 'auth/wrong-password':
-                  errorMessageText = 'Incorrect password.';
-                  break;
-                case 'auth/too-many-requests':
-                  errorMessageText = 'Too many failed attempts. Please try again later.';
-                  break;
-                case 'auth/network-request-failed':
-                  errorMessageText = 'Network error. Please check your connection.';
-                  break;
-              }
-              
-              this.showError(errorMessageText);
+              console.error('Login error:', error);
+              this.showError(Auth.friendly(error.code));
             } finally {
               this.isLoading = false;
             }
@@ -342,10 +204,10 @@ firebase.initializeApp(firebaseConfig);
           <!-- Login Card -->
           <div class="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/40 p-6 md:p-8">
             <!-- Error/Success Messages -->
-            <div id="error-message"
+            <div id="error-message" role="alert" aria-live="polite"
                  class="hidden bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-xl mb-4 text-sm">
             </div>
-            <div id="success-message"
+            <div id="success-message" role="status" aria-live="polite"
                  class="hidden bg-emerald-50 border border-emerald-300 text-emerald-800 px-4 py-3 rounded-xl mb-4 text-sm">
             </div>
 
@@ -368,8 +230,11 @@ firebase.initializeApp(firebaseConfig);
               <div class="space-y-6">
                 <!-- Email Field -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
+                  <label for="email-field" class="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
                   <input type="email" 
+                         id="email-field"
+                         name="email"
+                         autocomplete="email"
                          x-model="email"
                          required
                          class="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
@@ -378,18 +243,21 @@ firebase.initializeApp(firebaseConfig);
 
                 <!-- Password Field -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                  <label for="password-field" class="block text-sm font-medium text-slate-700 mb-2">Password</label>
                   <div class="relative">
                     <input type="password" 
                            x-model="password"
                            id="password-field"
+                           name="password"
+                           autocomplete="current-password"
                            required
                            class="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors pr-12"
                            placeholder="Enter your password">
                     <button type="button" 
+                            aria-label="Show password"
                             class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                             onclick="togglePassword()">
-                      <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg id="eye-icon" aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -509,20 +377,34 @@ firebase.initializeApp(firebaseConfig);
       function togglePassword() {
         const passwordField = document.getElementById('password-field');
         const eyeIcon = document.getElementById('eye-icon');
+        const toggleButton = eyeIcon.closest('button');
+        const showing = passwordField.type === 'text';
         
-        if (passwordField.type === 'password') {
+        if (!showing) {
           passwordField.type = 'text';
+          toggleButton.setAttribute('aria-label', 'Hide password');
           eyeIcon.innerHTML = `
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L12 12m-2.122-2.122L7.76 7.76m4.242 4.242L12 12m0 0l2.122 2.122M12 12l-2.122-2.122"></path>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
           `;
         } else {
           passwordField.type = 'password';
+          toggleButton.setAttribute('aria-label', 'Show password');
           eyeIcon.innerHTML = `
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
           `;
         }
+      }
+
+      // Already signed in? Skip the form. fromLogin marks a fresh login.
+      if (window.fb && window.fb.ready && window.fb.auth) {
+        window.fb.auth.onAuthStateChanged(function (user) {
+          if (!user) return;
+          var params = new URLSearchParams(window.location.search);
+          if (params.get('fromLogin')) return;
+          window.location.replace('dashboard.html');
+        });
       }
     </script>
   </body>

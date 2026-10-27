@@ -52,40 +52,15 @@
             }
         }
     </script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/alpinejs@3.13.10/dist/cdn.min.js" defer></script>
     
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    
-    <!-- . Chat -->
-    <script type="text/javascript">
-    var _. = _. || {};
-    _..key = '39b06ddf6254b8dd9eba8bc33b532cdef0a1c507';
-    window..||(function(d) {
-      var s,c,o=.=function(){ o._.push(arguments)};o._=[];
-      s=d.getElementsByTagName('script')[0];c=d.createElement('script');
-      c.type='text/javascript';c.charset='utf-8';c.async=true;
-      c.src='https://www..chat.com/loader.js?';s.parentNode.insertBefore(c,s);
-    })(document);
-    </script>
-    
-    <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCnBgSQy4SsvmR73iedkHCWKoseUyALS6s",
-            authDomain: "wyominglimited0.firebaseapp.com",
-            projectId: "wyominglimited0",
-            storageBucket: "wyominglimited0.firebasestorage.app",
-            messagingSenderId: "580988653712",
-            appId: "1:580988653712:web:c3b28d07bf8409f93ec815",
-            measurementId: "G-MT8SLSYM3S"
-        };
-        
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-    </script>
+    <!-- Firebase SDK (compat, pinned) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/tokens.js"></script>
 </head>
 <body class="bg-slate-50 min-h-screen"
       x-data="{ 
@@ -234,7 +209,7 @@
                     </button>
                     
                     <!-- Login -->
-                    <button onclick="window.location.href='login.php'"
+                    <button onclick="window.location.href='login.html'"
                             class="px-4 py-2 text-sm font-semibold text-slate-700 border border-slate-200 rounded-lg hover:border-primary hover:text-primary transition">
                         Login
                     </button>
@@ -725,10 +700,10 @@
                             </div>
 
                             <!-- Error/Success Messages -->
-                            <div id="error-message"
+                            <div id="error-message" role="alert" aria-live="polite"
                                  class="hidden bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-xl text-sm">
                             </div>
-                            <div id="success-message"
+                            <div id="success-message" role="status" aria-live="polite"
                                  class="hidden bg-emerald-50 border border-emerald-300 text-emerald-800 px-4 py-3 rounded-xl text-sm">
                             </div>
 
@@ -814,181 +789,96 @@
         </section>
     </main>
 
-        <!-- Submit Form Script - Fixed entity type detection -->
+        <!-- Submit Form Script -->
     <script>
     async function submitForm() {
-        console.log('submitForm called');
-        const submitBtn = document.getElementById('submitBtn');
-        const submitText = submitBtn.querySelector('.submit-text');
-        const loadingSpinner = submitBtn.querySelector('.loading-spinner');
-        const errorMessage = document.getElementById('error-message');
-        const successMessage = document.getElementById('success-message');
-        
-        // Get Alpine.js instance to access the data
-        const alpineElement = document.querySelector('[x-data]');
-        let entityType = '';
-        
-        // Try to get entity type from Alpine data first
-        if (alpineElement && alpineElement.__x) {
-            const alpineData = alpineElement.__x.$data;
-            entityType = alpineData.entityType || '';
-            console.log('Entity type from Alpine:', entityType);
+        var submitBtn = document.getElementById('submitBtn');
+        var submitText = submitBtn.querySelector('.submit-text');
+        var loadingSpinner = submitBtn.querySelector('.loading-spinner');
+        var errorMessage = document.getElementById('error-message');
+        var successMessage = document.getElementById('success-message');
+
+        function setBusy(busy) {
+            submitBtn.disabled = busy;
+            submitText.textContent = busy ? 'Submitting...' : 'Submit Application';
+            loadingSpinner.classList.toggle('hidden', !busy);
         }
-        
-        // Fallback to checking the UI for selected state
-        if (!entityType) {
-            // Check which entity type div has the active class
-            const llcDiv = document.querySelector('[x-model="entityType"][value="llc"]');
-            if (llcDiv && llcDiv.classList.contains('border-primary')) {
-                entityType = 'llc';
-            } else {
-                // Check each entity option by looking for the border-primary class
-                const entityOptions = document.querySelectorAll('.border-2.cursor-pointer');
-                entityOptions.forEach(option => {
-                    if (option.classList.contains('border-primary')) {
-                        const clickHandler = option.getAttribute('@click');
-                        if (clickHandler && clickHandler.includes('llc')) entityType = 'llc';
-                        else if (clickHandler && clickHandler.includes('corp')) entityType = 'corp';
-                        else if (clickHandler && clickHandler.includes('close-llc')) entityType = 'close-llc';
-                        else if (clickHandler && clickHandler.includes('close-corp')) entityType = 'close-corp';
-                    }
-                });
-            }
+
+        function fail(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+            setBusy(false);
         }
-        
-        // Get other form values directly from input fields
-        const companyName = document.querySelector('[x-model="companyName"]')?.value || '';
-        const firstName = document.querySelector('[x-model="firstName"]')?.value || '';
-        const lastName = document.querySelector('[x-model="lastName"]')?.value || '';
-        const email = document.querySelector('[x-model="email"]')?.value || '';
-        const password = document.querySelector('[x-model="password"]')?.value || '';
-        const phone = document.querySelector('[x-model="phone"]')?.value || '';
-        const address = document.querySelector('[x-model="address"]')?.value || '';
-        const unit = document.querySelector('[x-model="unit"]')?.value || '';
-        const city = document.querySelector('[x-model="city"]')?.value || '';
-        const country = document.querySelector('[x-model="country"]')?.value || '';
-        const postalCode = document.querySelector('[x-model="postalCode"]')?.value || '';
-        const partnerCode = document.querySelector('[x-model="partnerCode"]')?.value || '';
-        
-        // Get select values
-        const formationStateSelect = document.querySelector('[x-model="formationState"]');
-        const formationState = formationStateSelect ? formationStateSelect.value : 'Wyoming';
-        
-        const businessEndingSelect = document.querySelector('[x-model="businessEnding"]');
-        const businessEnding = businessEndingSelect ? businessEndingSelect.value : 'Prefer No Ending';
-        
-        const selectedCountrySelect = document.querySelector('[x-model="selectedCountry"]');
-        const selectedCountry = selectedCountrySelect ? selectedCountrySelect.value : 'US';
-        
+
+        // Alpine 3 data — no __x (that was Alpine 2).
+        var alpineElement = document.querySelector('[x-data]');
+        var data = (alpineElement && window.Alpine && typeof window.Alpine.$data === 'function')
+            ? window.Alpine.$data(alpineElement)
+            : {};
+
+        function value(name) {
+            if (data && typeof data[name] === 'string') return data[name].trim();
+            var input = document.querySelector('[x-model="' + name + '"]');
+            return input && typeof input.value === 'string' ? input.value.trim() : '';
+        }
+
+        var entityType = value('entityType');
+        var companyName = value('companyName');
+        var formationState = value('formationState') || 'Wyoming';
+        var businessEnding = value('businessEnding') || 'Prefer No Ending';
+        var firstName = value('firstName');
+        var lastName = value('lastName');
+        var email = value('email');
+        var password = value('password');
+        var phone = value('phone');
+        var address = value('address');
+        var unit = value('unit');
+        var city = value('city');
+        var country = value('country') || value('selectedCountry');
+        var postalCode = value('postalCode');
+        var partnerCode = value('partnerCode');
+
         errorMessage.classList.add('hidden');
         successMessage.classList.add('hidden');
-        
-        // Validation
-        if (!entityType) {
-            errorMessage.textContent = 'Please select an entity type';
-            errorMessage.classList.remove('hidden');
-            submitBtn.disabled = false;
-            submitText.textContent = 'Submit Application';
-            loadingSpinner.classList.add('hidden');
-            return;
+
+        if (!entityType) return fail('Please select an entity type');
+        if (!companyName) return fail('Please enter a company name');
+        if (!firstName) return fail('Please enter your first name');
+        if (!lastName) return fail('Please enter your last name');
+        if (!email) return fail('Please enter your email');
+        if (!password || password.length < 8) return fail('Password must be at least 8 characters');
+
+        if (!window.fb || !window.fb.ready || !window.fb.db) {
+            return fail('Service unavailable right now. Please refresh and try again.');
         }
-        if (!companyName) {
-            errorMessage.textContent = 'Please enter a company name';
-            errorMessage.classList.remove('hidden');
-            submitBtn.disabled = false;
-            submitText.textContent = 'Submit Application';
-            loadingSpinner.classList.add('hidden');
-            return;
-        }
-        if (!firstName) {
-            errorMessage.textContent = 'Please enter your first name';
-            errorMessage.classList.remove('hidden');
-            submitBtn.disabled = false;
-            submitText.textContent = 'Submit Application';
-            loadingSpinner.classList.add('hidden');
-            return;
-        }
-        if (!lastName) {
-            errorMessage.textContent = 'Please enter your last name';
-            errorMessage.classList.remove('hidden');
-            submitBtn.disabled = false;
-            submitText.textContent = 'Submit Application';
-            loadingSpinner.classList.add('hidden');
-            return;
-        }
-        if (!email) {
-            errorMessage.textContent = 'Please enter your email';
-            errorMessage.classList.remove('hidden');
-            submitBtn.disabled = false;
-            submitText.textContent = 'Submit Application';
-            loadingSpinner.classList.add('hidden');
-            return;
-        }
-        if (!password || password.length < 8) {
-            errorMessage.textContent = 'Password must be at least 8 characters';
-            errorMessage.classList.remove('hidden');
-            submitBtn.disabled = false;
-            submitText.textContent = 'Submit Application';
-            loadingSpinner.classList.add('hidden');
-            return;
-        }
-        
-        submitBtn.disabled = true;
-        submitText.textContent = 'Submitting...';
-        loadingSpinner.classList.remove('hidden');
-        
+
+        setBusy(true);
+
         try {
-            // 1. Create user in Firebase Authentication
-            const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
-            const user = userCredential.user;
-            
-            // 2. Create user balance document
-            const initialBalances = {
-                BTC: 0,
-                ETH: 0,
-                USDT: 0,
-                BNB: 0,
-                SOL: 0,
-                XRP: 0,
-                ADA: 0,
-                DOGE: 0,
-                DOT: 0,
-                LINK: 0,
-                MATIC: 0,
-                SHIB: 0,
-                TRX: 0,
-                BCH: 0,
-                LTC: 0,
-                ALGO: 0,
-                XLM: 0,
-                VET: 0,
-                IOTX: 0,
-                CRO: 0,
-                QNT: 0,
-                HBAR: 0,
-                FLR: 0,
-                JASMY: 0,
-                PEPE: 0,
-                ONDO: 0,
-                CELO: 0,
-                ZBCN: 0,
-                LCX: 0
-            };
-            
-            await firebase.firestore().collection('user_balances').doc(user.uid).set({
+            // 1. Create the auth account (also sends verification + user doc).
+            var registration = await Auth.registerUser(email, password, (firstName + ' ' + lastName).trim());
+            if (!registration.success) {
+                return fail(registration.error || Auth.friendly(registration.code));
+            }
+            var user = registration.user;
+
+            // 2. Seed balances from the canonical asset list.
+            var initialBalances = {};
+            window.Tokens.symbols().forEach(function (symbol) {
+                initialBalances[symbol] = 0;
+            });
+
+            await window.fb.db.collection('user_balances').doc(user.uid).set({
                 balances: initialBalances,
                 userEmail: email,
-                displayName: `${firstName} ${lastName}`,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
-                userId: user.uid,
-                status: 'active'
-            });
-            
-            console.log("User balance document created for:", user.uid);
-            
-            // 3. Save company data to Firestore
-            const companyData = {
+                displayName: (firstName + ' ' + lastName).trim(),
+                lastUpdated: window.fb.stamp(),
+                status: 'active',
+                userId: user.uid
+            }, { merge: true });
+
+            // 3. One document per company — a user may form more than one.
+            var companyData = {
                 formationState: formationState,
                 entityType: entityType,
                 companyName: companyName,
@@ -1003,66 +893,32 @@
                 country: country,
                 postalCode: postalCode,
                 partnerCode: partnerCode,
-                selectedCountry: selectedCountry,
+                selectedCountry: value('selectedCountry') || country,
                 userId: user.uid,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                createdAt: window.fb.stamp(),
                 status: 'pending',
-                companyId: 'COMP-' + Date.now() + Math.random().toString(36).substr(2, 9)
+                companyId: 'COMP-' + Date.now() + Math.random().toString(36).slice(2, 11)
             };
-            
-            await firebase.firestore().collection('companies').doc(user.uid).set(companyData);
-            
-            // 4. Update user profile
-            await user.updateProfile({
-                displayName: `${firstName} ${lastName}`,
-            });
-            
-            // 5. Send email verification
-            await user.sendEmailVerification();
-            
+
+            await window.fb.db.collection('companies').add(companyData);
+
             successMessage.textContent = 'Registration successful! Redirecting to dashboard...';
             successMessage.classList.remove('hidden');
-            
-            setTimeout(() => {
+
+            setTimeout(function () {
                 window.location.href = 'dashboard.html';
-            }, 2000);
-            
+            }, 1500);
+
         } catch (error) {
-            console.error('Firebase error:', error);
-            
-            let errorMsg = 'An error occurred during registration.';
-            switch(error.code) {
-                case 'auth/email-already-in-use':
-                    errorMsg = 'This email is already registered. Please use a different email or login.';
-                    break;
-                case 'auth/invalid-email':
-                    errorMsg = 'Invalid email address.';
-                    break;
-                case 'auth/operation-not-allowed':
-                    errorMsg = 'Email/password accounts are not enabled. Please contact support.';
-                    break;
-                case 'auth/weak-password':
-                    errorMsg = 'Password is too weak. Please choose a stronger password.';
-                    break;
-                case 'auth/network-request-failed':
-                    errorMsg = 'Network error. Please check your internet connection.';
-                    break;
-                default:
-                    errorMsg = error.message || 'Registration failed. Please try again.';
-            }
-            
-            errorMessage.textContent = errorMsg;
-            errorMessage.classList.remove('hidden');
-            
-            submitBtn.disabled = false;
-            submitText.textContent = 'Submit Application';
-            loadingSpinner.classList.add('hidden');
+            console.error('Registration error:', error);
+            fail(Auth.friendly(error.code));
         }
     }
 
-    // Make submitForm available globally
+    // Alpine @click resolves globals through window.
     window.submitForm = submitForm;
     </script>
+
 
     <script>
         // URL parameter error handling
