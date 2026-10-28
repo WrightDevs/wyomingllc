@@ -21,8 +21,8 @@
             }
             
         </script>
-        <!-- <script src="js/clean-urls.js"></script> -->
-        <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+        <script src="js/clean-urls.js"></script>
+        <script src="https://unpkg.com/alpinejs@3.13.10/dist/cdn.min.js" defer></script>
         <script type="text/javascript">
     var _smartsupp = _smartsupp || {};
     _smartsupp.key = '39b06ddf6254b8dd9eba8bc33b532cdef0a1c507';
@@ -42,26 +42,8 @@
     }">
     <script>
 function handleSignOut() {
-  // Sign out from Firebase
-  auth.signOut().then(() => {
-    // Clear local storage
-    localStorage.clear();
-    sessionStorage.clear();
-    
-    // Clear cookies
-    document.cookie.split(";").forEach(function(c) {
-      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
-    
-    // Show confirmation
-    alert('You have been signed out successfully.');
-    
-    // Redirect to login page
-    window.location.href = '../index.html'; // Change to your actual login page
-  }).catch((error) => {
-    console.error("Sign out error:", error);
-    alert('Error signing out. Please try again.');
-  });
+  // Sign out once, then land on the login page. No alert.
+  Auth.signOut('login.html');
 }
 </script>
         <!-- Top Header -->
@@ -75,7 +57,7 @@ function handleSignOut() {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                             </svg>
                         </button>
-                        <img src="../assets/wyoming.png" alt="Wyoming LLC Attorney" class="h-8 sm:h-10 w-auto" />
+                        <img src="assets/wyoming.png" alt="Wyoming LLC Attorney" class="h-8 sm:h-10 w-auto" />
                         <div class="hidden sm:block">
                             <h1 class="text-lg sm:text-xl font-semibold text-gray-800">Business Dashboard</h1>
                             <p class="text-xs text-gray-500 hidden md:block">Track your LLC formations and manage your entities in one place.</p>
@@ -95,8 +77,9 @@ function handleSignOut() {
                             <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-3.05-3.05A4.98 4.98 0 0118 11c0-2.76-2.24-5-5-5s-5 2.24-5 5c0 1.38.56 2.63 1.46 3.54L6 17h5m4 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
                             </svg>
-                            <span class="absolute -top-1 -right-1 bg-orange text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
-                                1                        </span>
+                            <span id="pendingBadge" class="absolute -top-1 -right-1 bg-orange text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
+                                0
+                            </span>
                         </button>
                         
                         <!-- User Menu -->
@@ -238,9 +221,9 @@ function handleSignOut() {
                                 <div class="flex items-center gap-4 justify-start md:justify-end">
                                     <div class="hidden sm:flex items-center space-x-3 bg-white/10 rounded-full px-4 py-2">
                                         <span class="text-xs uppercase tracking-wide text-blue-100">Pending LLCs</span>
-                                        <span class="text-lg font-semibold">1</span>
+                                        <span class="text-lg font-semibold" id="pendingPill">0</span>
                                     </div>
-                                    <a href="/add-company.html" class="bg-orange text-white hover:bg-orange/90 rounded-lg px-4 py-2.5 text-sm sm:text-base font-semibold shadow-sm transition-colors">
+                                    <a href="add-company.html" class="bg-orange text-white hover:bg-orange/90 rounded-lg px-4 py-2.5 text-sm sm:text-base font-semibold shadow-sm transition-colors">
                                         + Form New LLC
                                     </a>
                                 </div>
@@ -255,7 +238,7 @@ function handleSignOut() {
                             <div class="flex items-center justify-between">
                                 <div class="flex-1">
                                     <p class="text-sm font-medium text-gray-600">Total LLCs</p>
-                                    <p class="text-xl sm:text-2xl font-bold text-gray-900">1</p>
+                                    <p id="statTotal" class="text-xl sm:text-2xl font-bold text-gray-900">0</p>
                                     <p class="text-xs sm:text-sm text-yellow-600 mt-1">Applications currently under review</p>
                                 </div>
                                 <div class="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-3">
@@ -271,7 +254,7 @@ function handleSignOut() {
                             <div class="flex items-center justify-between">
                                 <div class="flex-1">
                                     <p class="text-sm font-medium text-gray-600">Approved LLCs</p>
-                                    <p class="text-xl sm:text-2xl font-bold text-gray-900">0</p>
+                                    <p id="statApproved" class="text-xl sm:text-2xl font-bold text-gray-900">0</p>
                                     <p class="text-xs sm:text-sm text-green-600 mt-1">LLCs that are fully approved and active</p>
                                 </div>
                                 <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-500/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-3">
@@ -287,7 +270,7 @@ function handleSignOut() {
                             <div class="flex items-center justify-between">
                                 <div class="flex-1">
                                     <p class="text-sm font-medium text-gray-600">Pending LLCs</p>
-                                    <p class="text-xl sm:text-2xl font-bold text-gray-900">1</p>
+                                    <p id="statPending" class="text-xl sm:text-2xl font-bold text-gray-900">0</p>
                                     <p class="text-xs sm:text-sm text-yellow-600 mt-1">Applications currently under review</p>
                                 </div>
                                 <div class="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-3">
@@ -303,7 +286,7 @@ function handleSignOut() {
                     <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-purple-custom/10">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
                             <h3 class="text-lg font-semibold text-gray-800">Your LLC Applications</h3>
-                            <a href="/add-company.html" class="bg-orange hover:bg-orange/90 text-white px-4 py-2 rounded-lg font-medium transition-colors text-center text-sm sm:text-base">
+                            <a href="add-company.html" class="bg-orange hover:bg-orange/90 text-white px-4 py-2 rounded-lg font-medium transition-colors text-center text-sm sm:text-base">
                                 Form New LLC
                             </a>
                         </div>
@@ -320,31 +303,10 @@ function handleSignOut() {
                                             <th class="text-left py-3 px-3 sm:px-4 font-medium text-gray-600 text-xs sm:text-sm hidden lg:table-cell">Applied</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                                                                                                            <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                                    <td class="py-3 sm:py-4 px-3 sm:px-4 font-medium text-gray-800 text-sm sm:text-base">
-                                                        <div class="max-w-xs truncate">
-                                                            wydad                                                    </div>
-                                                        <!-- Mobile-only details -->
-                                                        <div class="sm:hidden text-xs text-gray-500 mt-1">
-                                                            llc • Wyoming                                                    </div>
-                                                    </td>
-                                                    <td class="py-3 sm:py-4 px-3 sm:px-4 text-gray-600 text-sm hidden sm:table-cell">
-                                                        LLC                                                </td>
-                                                    <td class="py-3 sm:py-4 px-3 sm:px-4 text-gray-600 text-sm hidden md:table-cell">
-                                                        Wyoming                                                </td>
-                                                    <td class="py-3 sm:py-4 px-3 sm:px-4">
-                                                        <span class="inline-block px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
-                                                            Pending                                                    </span>
-                                                        <!-- Mobile-only date -->
-                                                        <div class="lg:hidden text-xs text-gray-500 mt-1">
-                                                            Dec 28, 2025                                                    </div>
-                                                    </td>
-                                                    <td class="py-3 sm:py-4 px-3 sm:px-4 text-gray-600 text-sm hidden lg:table-cell">
-                                                        Dec 28, 2025                                                </td>
-                                                </tr>
-                                                                                                                </tbody>
-                                </table>
+                                    <tbody id="overviewLLCBody">
+                                        <tr><td colspan="5" class="py-8 text-center text-sm text-gray-500">Loading your applications?</td></tr>
+                                    </tbody>
+</table>
                             </div>
                         </div>
                     </div>
@@ -369,7 +331,7 @@ function handleSignOut() {
                                     </svg>
                                 </div>
                                 <div class="text-center lg:text-left">
-                                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">0</p>
+                                    <p id="statApproved2" class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">0</p>
                                     <p class="text-xs sm:text-sm text-gray-600">Approved</p>
                                 </div>
                             </div>
@@ -383,7 +345,7 @@ function handleSignOut() {
                                     </svg>
                                 </div>
                                 <div class="text-center lg:text-left">
-                                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">1</p>
+                                    <p id="statPending2" class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">1</p>
                                     <p class="text-xs sm:text-sm text-gray-600">Pending</p>
                                 </div>
                             </div>
@@ -397,7 +359,7 @@ function handleSignOut() {
                                     </svg>
                                 </div>
                                 <div class="text-center lg:text-left">
-                                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">0</p>
+                                    <p id="statProcessing" class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">0</p>
                                     <p class="text-xs sm:text-sm text-gray-600">Processing</p>
                                 </div>
                             </div>
@@ -411,7 +373,7 @@ function handleSignOut() {
                                     </svg>
                                 </div>
                                 <div class="text-center lg:text-left">
-                                    <p class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">0</p>
+                                    <p id="statRejected" class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">0</p>
                                     <p class="text-xs sm:text-sm text-gray-600">Rejected</p>
                                 </div>
                             </div>
@@ -422,7 +384,7 @@ function handleSignOut() {
                     <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-purple-custom/10">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
                             <h3 class="text-lg font-semibold text-gray-800">All Your LLCs</h3>
-                            <a href="/add-company.html" class="bg-orange hover:bg-orange/90 text-white px-4 py-2 rounded-lg font-medium transition-colors text-center text-sm sm:text-base">
+                            <a href="add-company.html" class="bg-orange hover:bg-orange/90 text-white px-4 py-2 rounded-lg font-medium transition-colors text-center text-sm sm:text-base">
                                 Form New LLC
                             </a>
                         </div>
@@ -439,470 +401,232 @@ function handleSignOut() {
                                         <th class="text-left py-3 px-4 font-medium text-gray-600 text-sm">State Fee</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                                                                                                <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                                <td class="py-4 px-4 font-medium text-gray-800">
-                                                    wydad                                            </td>
-                                                <td class="py-4 px-4 text-gray-600">
-                                                    LLC                                            </td>
-                                                <td class="py-4 px-4 text-gray-600">
-                                                    Wyoming                                            </td>
-                                                <td class="py-4 px-4">
-                                                    <span class="inline-block px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
-                                                        Pending                                                </span>
-                                                </td>
-                                                <td class="py-4 px-4 text-gray-600">
-                                                    Dec 28, 2025                                            </td>
-                                                <td class="py-4 px-4 text-gray-600">
-                                                    $100.00
-                                                </td>
-                                            </tr>
-                                                                                                    </tbody>
-                            </table>
+                                <tbody id="allLLCBody">
+                                        <tr><td colspan="6" class="py-8 text-center text-sm text-gray-500">Loading your applications?</td></tr>
+                                    </tbody>
+</table>
                         </div>
                     </div>
                 </div>
             </main>
         </div>
-        <!-- Add Firebase SDK to your HTML (e.g., in the head or before your other scripts) -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+        <!-- Firebase SDK (compat, pinned) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
 
 <script>
-  // Your Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyCnBgSQy4SsvmR73iedkHCWKoseUyALS6s",
-    authDomain: "wyominglimited0.firebaseapp.com",
-    projectId: "wyominglimited0",
-    storageBucket: "wyominglimited0.firebasestorage.app",
-    messagingSenderId: "580988653712",
-    appId: "1:580988653712:web:c3b28d07bf8409f93ec815",
-    measurementId: "G-MT8SLSYM3S"
-  };
+(function () {
+  'use strict';
 
-  // Initialize Firebase
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+  var companyUnsubscribe = null;
+
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
-  const auth = firebase.auth();
-  const db = firebase.firestore();
 
-  // Function to get current user's data from Firestore
-  async function getUserDataFromFirestore() {
-    try {
-      const currentUser = auth.currentUser;
-      
-      if (!currentUser) {
-        console.log("No user is logged in");
-        return null;
-      }
+  function toMillis(value) {
+    if (!value) return 0;
+    if (typeof value.toMillis === 'function') return value.toMillis();
+    if (typeof value.toDate === 'function') return value.toDate().getTime();
+    if (value instanceof Date) return value.getTime();
+    if (typeof value === 'number') return value;
+    var parsed = Date.parse(value);
+    return isNaN(parsed) ? 0 : parsed;
+  }
 
-      const userEmail = currentUser.email || "agent122@gmail.com";
-      const userId = currentUser.uid;
-      
-      console.log("Looking for user with email:", userEmail, "UID:", userId);
-      
-      // Try to get user data by email
-   // Query companies collection by userId
-const querySnapshot = await db.collection("companies")
-    .where("userId", "==", currentUser.uid)
-    .orderBy("createdAt", "desc")
-    .get();
-      
-      if (!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0];
-        const userData = userDoc.data();
-        console.log("Found user data:", userData);
-        
-        const firstName = userData.firstName || "";
-        const lastName = userData.lastName || "";
-        const fullName = `${firstName} ${lastName}`.trim() || "User";
-        
-        return {
-          name: fullName,
-          email: userData.email || userEmail,
-          firstName: firstName,
-          lastName: lastName,
-          userId: userId
-        };
+  function formatDate(value) {
+    var millis = toMillis(value);
+    if (!millis) return '—';
+    return new Date(millis).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  }
+
+  function statusMeta(status) {
+    var key = status || 'pending';
+    var map = {
+      approved: { text: 'Approved', cls: 'bg-green-100 text-green-800' },
+      pending: { text: 'Pending', cls: 'bg-yellow-100 text-yellow-800' },
+      processing: { text: 'Processing', cls: 'bg-blue-100 text-blue-800' },
+      rejected: { text: 'Rejected', cls: 'bg-red-100 text-red-800' }
+    };
+    return map[key] || { text: key.charAt(0).toUpperCase() + key.slice(1), cls: 'bg-yellow-100 text-yellow-800' };
+  }
+
+  function entityLabel(type) {
+    if (type === 'close-llc') return 'Close LLC';
+    if (type === 'series-llc') return 'Series LLC';
+    if (!type) return 'LLC';
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  }
+
+  function emptyRow(colspan, message) {
+    return '<tr><td colspan="' + colspan + '" class="py-8 text-center text-sm text-gray-500">' + esc(message) + '</td></tr>';
+  }
+
+  function renderLLCTables(companies) {
+    var total = companies.length;
+    var approved = companies.filter(function (c) { return c.status === 'approved'; }).length;
+    var pending = companies.filter(function (c) { return c.status === 'pending'; }).length;
+    var processing = companies.filter(function (c) { return c.status === 'processing'; }).length;
+    var rejected = companies.filter(function (c) { return c.status === 'rejected'; }).length;
+
+    var ids = [
+      ['statTotal', total],
+      ['statApproved', approved],
+      ['statPending', pending],
+      ['statApproved2', approved],
+      ['statPending2', pending],
+      ['statProcessing', processing],
+      ['statRejected', rejected],
+      ['pendingBadge', pending],
+      ['pendingPill', pending]
+    ];
+    ids.forEach(function (pair) {
+      var el = document.getElementById(pair[0]);
+      if (el) el.textContent = pair[1];
+    });
+
+    var overviewBody = document.getElementById('overviewLLCBody');
+    if (overviewBody) {
+      if (!companies.length) {
+        overviewBody.innerHTML = emptyRow(5, 'No applications yet. Form your first LLC to get started.');
       } else {
-        console.log("No user document found");
-        return {
-          name: "...",
-          email: "...",
-          userId: userId,
-          fallback: true
-        };
+        overviewBody.innerHTML = companies.map(function (company) {
+          var status = statusMeta(company.status);
+          return '' +
+            '<tr class="border-b border-gray-100 hover:bg-gray-50">' +
+              '<td class="py-3 sm:py-4 px-3 sm:px-4 font-medium text-gray-800 text-sm sm:text-base">' +
+                '<div class="max-w-xs truncate">' + esc(company.companyName || 'Unnamed Company') + '</div>' +
+                '<div class="sm:hidden text-xs text-gray-500 mt-1">' + esc(entityLabel(company.entityType)) + ' • ' + esc(company.formationState || 'Wyoming') + '</div>' +
+              '</td>' +
+              '<td class="py-3 sm:py-4 px-3 sm:px-4 text-gray-600 text-sm hidden sm:table-cell">' + esc(entityLabel(company.entityType)) + '</td>' +
+              '<td class="py-3 sm:py-4 px-3 sm:px-4 text-gray-600 text-sm hidden md:table-cell">' + esc(company.formationState || 'Wyoming') + '</td>' +
+              '<td class="py-3 sm:py-4 px-3 sm:px-4">' +
+                '<span class="inline-block px-2 py-1 text-xs rounded-full ' + status.cls + '">' + esc(status.text) + '</span>' +
+                '<div class="lg:hidden text-xs text-gray-500 mt-1">' + esc(formatDate(company.createdAt)) + '</div>' +
+              '</td>' +
+              '<td class="py-3 sm:py-4 px-3 sm:px-4 text-gray-600 text-sm hidden lg:table-cell">' + esc(formatDate(company.createdAt)) + '</td>' +
+            '</tr>';
+        }).join('');
       }
-      
-    } catch (error) {
-      console.error("Error fetching user data:", error.code, error.message);
-      
-      if (error.code === 'permission-denied') {
-        console.error("FIREBASE PERMISSIONS ERROR");
-        console.error("Go to Firebase Console → Firestore Database → Rules");
+    }
+
+    var allBody = document.getElementById('allLLCBody');
+    if (allBody) {
+      if (!companies.length) {
+        allBody.innerHTML = emptyRow(6, 'No applications yet. Form your first LLC to get started.');
+      } else {
+        allBody.innerHTML = companies.map(function (company) {
+          var status = statusMeta(company.status);
+          return '' +
+            '<tr class="border-b border-gray-100 hover:bg-gray-50">' +
+              '<td class="py-4 px-4 font-medium text-gray-800">' + esc(company.companyName || 'Unnamed Company') + '</td>' +
+              '<td class="py-4 px-4 text-gray-600">' + esc(entityLabel(company.entityType)) + '</td>' +
+              '<td class="py-4 px-4 text-gray-600">' + esc(company.formationState || 'Wyoming') + '</td>' +
+              '<td class="py-4 px-4"><span class="inline-block px-2 py-1 text-xs rounded-full ' + status.cls + '">' + esc(status.text) + '</span></td>' +
+              '<td class="py-4 px-4 text-gray-600">' + esc(formatDate(company.createdAt)) + '</td>' +
+              '<td class="py-4 px-4 text-gray-600">$' + esc(company.stateFee || '100.00') + '</td>' +
+            '</tr>';
+        }).join('');
       }
-      
-      return {
-        name: "...",
-        email: "...",
-        error: true
-      };
     }
   }
-
-  // Real-time listener for company/LLC data
-  // Replaces the old one-time getDocs fetch.
-  // onSnapshot fires immediately on load AND every time
-  // the admin updates a status — so the user sees it live.
-  let _companyUnsubscribe = null;
 
   function subscribeToCompanyData(userId) {
-    // Unsubscribe from any previous listener first
-    if (_companyUnsubscribe) {
-      _companyUnsubscribe();
-      _companyUnsubscribe = null;
+    if (companyUnsubscribe) {
+      companyUnsubscribe();
+      companyUnsubscribe = null;
     }
+    if (!userId || !window.fb || !window.fb.db) return;
 
-    if (!userId) return;
-
-    console.log("Starting real-time listener for userId:", userId);
-
-    const query = db.collection("companies")
-      .where("userId", "==", userId);
-
-    _companyUnsubscribe = query.onSnapshot(
-      (querySnapshot) => {
-        const companies = [];
-        querySnapshot.forEach(doc => {
-          companies.push({ id: doc.id, ...doc.data() });
+    // No orderBy: that combination needs a composite index and silently fails.
+    companyUnsubscribe = window.fb.db.collection('companies')
+      .where('userId', '==', userId)
+      .onSnapshot(function (snapshot) {
+        var companies = [];
+        snapshot.forEach(function (doc) {
+          companies.push(Object.assign({ id: doc.id }, doc.data()));
         });
-        console.log("Real-time update — companies:", companies.length);
-        // Directly update the UI with fresh data
+        companies.sort(function (a, b) {
+          return toMillis(b.createdAt) - toMillis(a.createdAt);
+        });
         renderLLCTables(companies);
-      },
-      (error) => {
-        console.error("onSnapshot error:", error.code, error.message);
-        if (error.code === 'permission-denied') {
-          console.error("PERMISSIONS ERROR — check Firestore rules for companies collection");
-        }
-      }
-    );
+      }, function (error) {
+        console.error('Company listener failed:', error.code, error.message);
+        renderLLCTables([]);
+      });
   }
 
-  // Keep fetchCompanyData as a one-time fallback (used nowhere now,
-  // but kept so nothing else breaks if called elsewhere)
-  async function fetchCompanyData() {
-    try {
-      const currentUser = auth.currentUser;
-      if (!currentUser) return [];
-      const querySnapshot = await db.collection("companies")
-        .where("userId", "==", currentUser.uid)
-        .get();
-      const companies = [];
-      querySnapshot.forEach(doc => companies.push({ id: doc.id, ...doc.data() }));
-      return companies;
-    } catch (error) {
-      console.error("Error fetching company data:", error.code, error.message);
-      return [];
-    }
+  function titleCaseName(name) {
+    return String(name || '')
+      .split(' ')
+      .filter(Boolean)
+      .map(function (word) {
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      })
+      .join(' ');
   }
 
-  // Function to format date from Firestore timestamp
-  function formatDate(timestamp) {
-    if (!timestamp) return "Dec 28, 2025";
-    
-    try {
-      // If it's a Firestore timestamp
-      if (timestamp.toDate) {
-        const date = timestamp.toDate();
-        return date.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric'
-        });
-      }
-      
-      // If it's already a Date object
-      if (timestamp instanceof Date) {
-        return timestamp.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric'
-        });
-      }
-      
-      // If it's a string
-      return timestamp;
-    } catch (error) {
-      console.error("Error formatting date:", error);
-      return "Dec 28, 2025";
+  async function updateDashboardUserInfo(user) {
+    var profile = await Auth.getProfile();
+    var displayName = titleCaseName((profile && profile.displayName) || (user && user.displayName) || '');
+    var email = (profile && profile.email) || (user && user.email) || '';
+
+    if (!displayName && email) displayName = titleCaseName(email.split('@')[0]);
+
+    var nameEl = document.getElementById('userName');
+    if (nameEl) nameEl.textContent = displayName || 'Account';
+
+    var emailEl = document.getElementById('userEmail');
+    if (emailEl) emailEl.textContent = email;
+
+    var initialsEl = document.getElementById('userInitials');
+    if (initialsEl) {
+      var parts = displayName.split(' ').filter(Boolean);
+      var initials = parts.length >= 2
+        ? parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
+        : (parts[0] || 'A').slice(0, 2);
+      initialsEl.textContent = initials.toUpperCase();
     }
+
+    var welcomeName = document.getElementById('welcomeName');
+    if (welcomeName) welcomeName.textContent = 'Welcome back, ' + (displayName || 'there') + '!';
+
+    var mainWelcome = document.getElementById('mainWelcome');
+    if (mainWelcome) mainWelcome.textContent = 'Welcome back, ' + (displayName || 'there') + '!';
   }
 
-  // Render LLC tables — called by the real-time onSnapshot listener.
-  // Receives the companies array directly (no Firestore call here).
-  function renderLLCTables(companies) {
-    console.log("Companies to display:", companies);
-    
-    // Update the metrics cards
-    const totalLLCs = companies.length;
-    const approvedLLCs = companies.filter(c => c.status === 'approved').length;
-    const pendingLLCs = companies.filter(c => c.status === 'pending').length;
-    const processingLLCs = companies.filter(c => c.status === 'processing').length;
-    const rejectedLLCs = companies.filter(c => c.status === 'rejected').length;
-    
-    console.log("Counts - Total:", totalLLCs, "Approved:", approvedLLCs, "Pending:", pendingLLCs);
-    
-    // Update Total LLCs card
-    const totalElement = document.querySelector('.text-xl.sm\\:text-2xl.font-bold.text-gray-900:first-of-type');
-    if (totalElement) totalElement.textContent = totalLLCs;
-    
-    // Update Approved LLCs card
-    const approvedElements = document.querySelectorAll('.text-xl.sm\\:text-2xl.font-bold.text-gray-900');
-    if (approvedElements.length > 1) approvedElements[1].textContent = approvedLLCs;
-    
-    // Update Pending LLCs card
-    if (approvedElements.length > 2) approvedElements[2].textContent = pendingLLCs;
-    
-    // Update LLC Management status cards
-    const statusCards = document.querySelectorAll('.text-lg.sm\\:text-xl.lg\\:text-2xl.font-bold.text-gray-900');
-    if (statusCards.length >= 4) {
-      statusCards[0].textContent = approvedLLCs;      // Approved
-      statusCards[1].textContent = pendingLLCs;       // Pending
-      statusCards[2].textContent = processingLLCs;    // Processing
-      statusCards[3].textContent = rejectedLLCs;      // Rejected
-    }
-    
-    // Update pending badge in header
-    const pendingBadge = document.querySelector('.bg-orange.text-white.text-xs.rounded-full span');
-    if (pendingBadge) pendingBadge.textContent = pendingLLCs;
-    
-    // If no companies found, keep the hardcoded one as fallback
-    if (companies.length === 0) {
-      console.log("No company data found, using fallback 'wydad'");
+  document.addEventListener('DOMContentLoaded', function () {
+    if (!window.fb || !window.fb.ready) {
+      renderLLCTables([]);
       return;
     }
-    
-    // Update Overview tab table (Recent LLCs)
-    const overviewBody = document.querySelector('table.min-w-full tbody');
-    if (overviewBody) {
-      overviewBody.innerHTML = companies.map(company => {
-        const status = company.status || 'pending';
-        const statusText = status.charAt(0).toUpperCase() + status.slice(1);
-        const statusClass = {
-          'approved': 'bg-green-100 text-green-800',
-          'pending': 'bg-yellow-100 text-yellow-800',
-          'processing': 'bg-blue-100 text-blue-800',
-          'rejected': 'bg-red-100 text-red-800'
-        }[status] || 'bg-yellow-100 text-yellow-800';
-        
-        const appDate = formatDate(company.createdAt);
-        
-        return `
-          <tr class="border-b border-gray-100 hover:bg-gray-50">
-            <td class="py-3 sm:py-4 px-3 sm:px-4 font-medium text-gray-800 text-sm sm:text-base">
-                <div class="max-w-xs truncate">
-                    ${company.companyName || "Unnamed Company"}
-                </div>
-                <div class="sm:hidden text-xs text-gray-500 mt-1">
-                    ${company.entityType || "llc"} • ${company.formationState || "Wyoming"}
-                </div>
-            </td>
-            <td class="py-3 sm:py-4 px-3 sm:px-4 text-gray-600 text-sm hidden sm:table-cell">
-                ${company.entityType === 'close-llc' ? 'Close LLC' : 
-                  company.entityType === 'series-llc' ? 'Series LLC' :
-                  company.entityType ? company.entityType.charAt(0).toUpperCase() + company.entityType.slice(1) : "LLC"}
-            </td>
-            <td class="py-3 sm:py-4 px-3 sm:px-4 text-gray-600 text-sm hidden md:table-cell">
-                ${company.formationState || "Wyoming"}
-            </td>
-            <td class="py-3 sm:py-4 px-3 sm:px-4">
-                <span class="inline-block px-2 py-1 text-xs rounded-full ${statusClass}">
-                    ${statusText}
-                </span>
-                <div class="lg:hidden text-xs text-gray-500 mt-1">
-                    ${appDate}
-                </div>
-            </td>
-            <td class="py-3 sm:py-4 px-3 sm:px-4 text-gray-600 text-sm hidden lg:table-cell">
-                ${appDate}
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-    
-    // Update LLC Management tab table (All LLCs)
-    const allLLCsBody = document.querySelector('.w-full tbody');
-    if (allLLCsBody) {
-      allLLCsBody.innerHTML = companies.map(company => {
-        const status = company.status || 'pending';
-        const statusText = status.charAt(0).toUpperCase() + status.slice(1);
-        const statusClass = {
-          'approved': 'bg-green-100 text-green-800',
-          'pending': 'bg-yellow-100 text-yellow-800',
-          'processing': 'bg-blue-100 text-blue-800',
-          'rejected': 'bg-red-100 text-red-800'
-        }[status] || 'bg-yellow-100 text-yellow-800';
-        
-        const appDate = formatDate(company.createdAt);
-        const stateFee = company.stateFee || "100.00";
-        
-        return `
-          <tr class="border-b border-gray-100 hover:bg-gray-50">
-            <td class="py-4 px-4 font-medium text-gray-800">
-                ${company.companyName || "Unnamed Company"}
-            </td>
-            <td class="py-4 px-4 text-gray-600">
-                ${company.entityType === 'close-llc' ? 'Close LLC' : 
-                  company.entityType === 'series-llc' ? 'Series LLC' :
-                  company.entityType ? company.entityType.charAt(0).toUpperCase() + company.entityType.slice(1) : "LLC"}
-            </td>
-            <td class="py-4 px-4 text-gray-600">
-                ${company.formationState || "Wyoming"}
-            </td>
-            <td class="py-4 px-4">
-                <span class="inline-block px-2 py-1 text-xs rounded-full ${statusClass}">
-                    ${statusText}
-                </span>
-            </td>
-            <td class="py-4 px-4 text-gray-600">
-                ${appDate}
-            </td>
-            <td class="py-4 px-4 text-gray-600">
-                $${stateFee}
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-    
-    console.log("LLC tables updated successfully");
-  }
 
-  // Function to update the dashboard UI with user data
-  async function updateDashboardUserInfo() {
-    console.log("Updating dashboard user info...");
-    
-    let userData = await getUserDataFromFirestore();
-    
-    if (!userData) {
-      console.log("No user data available, using fallback");
-      userData = {
-        name: "...",
-        email: "...",
-        fallback: true
-      };
-    }
-
-    // Helper function to safely update elements
-    const updateElement = (selector, text, isHTML = false) => {
-      const element = document.querySelector(selector);
-      if (element) {
-        if (isHTML) {
-          element.innerHTML = text;
-        } else {
-          element.textContent = text;
-        }
-      }
-    };
-
-    // Get the full name and email
-   // Get the full name and email - with capitalization
-const userName = userData.name
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-const userEmail = userData.email;
-    
-    console.log("Setting name to:", userName, "email:", userEmail);
-
-    // 1. Update top right user menu (name)
-    updateElement('span.font-medium.text-sm.sm\\:text-base.max-w-\\[160px\\].truncate', userName);
-    
-    // 2. Update user initials in the avatar
-    const initialsElement = document.querySelector('div.w-7.h-7.sm\\:w-8.sm\\:h-8.bg-navy.rounded-full.flex.items-center.justify-center span');
-    if (initialsElement) {
-      const nameParts = userName.split(' ');
-      let initials = '';
-      
-      if (nameParts.length >= 2) {
-        initials = (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
-      } else if (nameParts.length === 1 && nameParts[0].length >= 2) {
-        initials = nameParts[0].substring(0, 2).toUpperCase();
-      } else {
-        initials = "TN";
-      }
-      
-      initialsElement.textContent = initials;
-    }
-    
-    // 3. Update email in dropdown
-    updateElement('p.text-xs.font-medium.text-gray-800.truncate', userEmail);
-    
-    // 4. Update welcome banner text
-    const welcomeBanner = document.querySelector('.bg-purple-custom.text-white.py-3.px-4.relative p.text-sm.lg\\:text-base');
-    if (welcomeBanner) {
-      const strongElement = welcomeBanner.querySelector('strong');
-      if (strongElement) {
-        strongElement.textContent = userName;
-      }
-    }
-    
-    // 5. Update main welcome section (h2)
-    updateElement('.bg-gradient-to-r.from-navy.via-purple-custom.to-navy.rounded-2xl h2', `Welcome back, ${userName}!`, true);
-    
-    console.log("User info updated successfully!");
-  }
-
-  // Main initialization function
-  async function initializeDashboard() {
-    console.log("Initializing dashboard...");
-    
-    auth.onAuthStateChanged(async function(user) {
-      console.log("Auth state changed. User:", user ? "Logged in" : "Not logged in");
-      
-      if (user) {
-        console.log("User email:", user.email, "UID:", user.uid);
-        await updateDashboardUserInfo();
-        // Start real-time listener — updates instantly when admin changes status
-        subscribeToCompanyData(user.uid);
-      } else {
-        console.log("No user logged in");
-        await updateDashboardUserInfo();
-        renderLLCTables([]);
-      }
+    // Guard: unauthenticated visitors go to login, then come back here.
+    Auth.requireAuth('login.html').then(function (user) {
+      if (!user) return;
+      updateDashboardUserInfo(user);
+      subscribeToCompanyData(user.uid);
     });
-  }
-
-  // Initialize on page load
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log("Dashboard page loaded");
-    
-    // Give everything a moment to initialize
-    setTimeout(() => {
-      initializeDashboard();
-    }, 1000);
   });
 
-  window.debugCompanies = async function() {
-    console.log("=== COMPANY DATA DEBUG ===");
-    const companies = await fetchCompanyData();
-    console.log("Total companies found:", companies.length);
-    companies.forEach((c, i) => {
-      console.log(`Company ${i + 1}:`, {
-        name: c.companyName,
-        type: c.entityType,
-        state: c.formationState,
-        status: c.status,
-        date: c.createdAt,
-        email: c.email
-      });
-    });
-  };
+  window.addEventListener('beforeunload', function () {
+    if (companyUnsubscribe) companyUnsubscribe();
+  });
+})();
 </script>
+
         <!--
   ============================================================
   CONTACT WIDGET — Floating Bubble + Modal (EmailJS)

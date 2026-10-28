@@ -1,0 +1,24 @@
+# Crawler policy — Wyoming LLC Attorney
+# Public marketing pages are open. Account, wallet and operator pages are not.
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /wallet
+Disallow: /crypto
+Disallow: /login
+Disallow: /forgot-password
+Disallow: /new
+Disallow: /add-company
+Disallow: /withdraw
+Disallow: /deposit
+Disallow: /buy
+Disallow: /swap
+Disallow: /stake
+Disallow: /cards
+Disallow: /history2
+Disallow: /home
+Disallow: /account
+
+Sitemap: https://www.wyomingllclimited.xyz/sitemap.xml

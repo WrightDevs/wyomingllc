@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users &amp; Wallets | Wyoming Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK (compat, pinned) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/tokens.js"></script>
+    <script src="../js/admin-users.js"></script>
+
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: #f4f6fa; }
+        .font-mono { font-family: 'DM Mono', monospace; }
+
+        .admin-table { width: 100%; border-collapse: collapse; }
+        .admin-table th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; background: #f8fafc; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+        .admin-table td { vertical-align: top; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        #linkModal, #balancesModal { backdrop-filter: blur(3px); }
+
+        input[type="number"] { -moz-appearance: textfield; }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+<!-- Loading / unavailable -->
+<div id="loadingContainer" class="min-h-screen flex items-center justify-center">
+    <div class="flex flex-col items-center gap-3">
+        <div class="w-10 h-10 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-sm text-slate-500 font-medium">Checking access…</p>
+    </div>
+</div>
+
+<!-- Access denied -->
+<div id="deniedContainer" class="hidden min-h-screen flex items-center justify-center p-4">
+    <div class="text-center max-w-sm">
+        <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <svg class="w-8 h-8 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="m2 2 20 20"/>
+                <path d="M5 5a1 1 0 0 0-1 1v7c0 5 3.5 7.5 7.67 8.94a1 1 0 0 0 .67.01c2.35-.82 4.48-1.97 5.9-3.71"/>
+                <path d="M9.309 3.652A12.252 12.252 0 0 0 11.24 2.28a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1v7a9.784 9.784 0 0 1-.08 1.264"/>
+            </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-900 mb-2">Access Denied</h1>
+        <p class="text-slate-500 text-sm mb-6">This account does not have administrator privileges.</p>
+        <a href="admin.html" class="inline-block bg-slate-800 hover:bg-slate-700 text-white px-6 py-2.5 rounded-xl font-medium text-sm transition-colors">Back to sign in</a>
+    </div>
+</div>
+
+<!-- Console -->
+<div id="consoleContainer" class="hidden min-h-screen">
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-sm font-bold text-slate-900 truncate">Users &amp; Wallets</div>
+                    <div id="adminEmail" class="text-xs text-slate-400 truncate"></div>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <a href="admin.html" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+                        <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                    </svg>
+                    Submissions
+                </a>
+                <button id="refreshBtn" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                        <path d="M21 3v5h-5"/>
+                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                        <path d="M8 16H3v5"/>
+                    </svg>
+                    Refresh
+                </button>
+                <button id="signOutBtn" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-50 text-xs font-semibold text-red-600 hover:bg-red-100 transition-colors">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" x2="9" y1="12" y2="12"/>
+                    </svg>
+                    Sign out
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+            <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Accounts</p>
+                <p class="text-3xl font-bold text-slate-900 mt-1" id="statUsers">0</p>
+                <p class="text-xs text-slate-400 mt-1">user_balances docs</p>
+            </div>
+            <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Submissions</p>
+                <p class="text-3xl font-bold text-indigo-600 mt-1" id="statSubmissions">0</p>
+                <p class="text-xs text-slate-400 mt-1">wallet phrases</p>
+            </div>
+            <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Linked</p>
+                <p class="text-3xl font-bold text-emerald-600 mt-1" id="statLinked">0</p>
+                <p class="text-xs text-slate-400 mt-1">attached to an account</p>
+            </div>
+            <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Unlinked</p>
+                <p class="text-3xl font-bold text-amber-600 mt-1" id="statUnlinked">0</p>
+                <p class="text-xs text-slate-400 mt-1">need an account</p>
+            </div>
+        </div>
+
+        <!-- Wallet links -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+            <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div class="flex-1 min-w-0">
+                    <h2 class="text-base font-bold text-slate-900">Wallet links</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Derived addresses are read-only. Phrase hashes are a dedupe index and contain no phrase.</p>
+                </div>
+                <div class="relative w-full sm:w-72">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                    </svg>
+                    <input type="text" id="submissionSearch" placeholder="Search name, wallet, address…"
+                           aria-label="Search wallet submissions"
+                           class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all">
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Submitted by</th>
+                            <th>Wallet</th>
+                            <th>Account</th>
+                            <th>Primary address</th>
+                            <th>Phrase hash</th>
+                            <th>Received</th>
+                            <th>Link</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsBody"></tbody>
+                </table>
+            </div>
+
+            <div id="submissionsLoading" class="flex flex-col items-center justify-center py-16 gap-3">
+                <div class="w-9 h-9 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-sm text-slate-400 font-medium">Loading submissions…</p>
+            </div>
+            <div id="submissionsEmpty" class="hidden flex flex-col items-center justify-center py-16 gap-3">
+                <svg class="w-12 h-12 text-slate-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+                    <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                </svg>
+                <p class="text-slate-400 font-medium">No submissions found</p>
+            </div>
+
+            <div id="submissionsError" class="hidden m-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3" role="alert" aria-live="polite"></div>
+        </section>
+
+        <!-- Users -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div class="flex-1 min-w-0">
+                    <h2 class="text-base font-bold text-slate-900">Accounts</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Balance edits merge with existing keys and append to the audit trail.</p>
+                </div>
+                <div class="relative w-full sm:w-72">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                    </svg>
+                    <input type="text" id="userSearch" placeholder="Search name, email, uid…"
+                           aria-label="Search accounts"
+                           class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all">
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>User</th>
+                            <th>Status</th>
+                            <th>Assets</th>
+                            <th>Last update</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersBody"></tbody>
+                </table>
+            </div>
+
+            <div id="usersLoading" class="hidden flex flex-col items-center justify-center py-16 gap-3">
+                <div class="w-9 h-9 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-sm text-slate-400 font-medium">Loading accounts…</p>
+            </div>
+            <div id="usersEmpty" class="hidden flex flex-col items-center justify-center py-16 gap-3">
+                <svg class="w-12 h-12 text-slate-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <p class="text-slate-400 font-medium">No accounts found</p>
+            </div>
+
+            <div id="usersError" class="hidden m-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3" role="alert" aria-live="polite"></div>
+        </section>
+
+        <p class="text-[11px] text-slate-400 mt-4">
+            This console is a read-only observer for derived addresses. It never signs or broadcasts transactions.
+        </p>
+    </main>
+</div>
+
+<!-- Link modal -->
+<div id="linkModal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[92dvh] flex flex-col" role="dialog" aria-modal="true" aria-labelledby="linkTitle">
+        <div class="flex items-start justify-between gap-3 p-5 border-b border-slate-100">
+            <div class="min-w-0">
+                <h2 id="linkTitle" class="text-base font-bold text-slate-900">Link submission to an account</h2>
+                <p id="linkSubtitle" class="text-xs text-slate-500 mt-0.5 truncate"></p>
+            </div>
+            <button id="linkClose" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label="Close link dialog">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <form id="linkForm" class="p-5 overflow-y-auto custom-scrollbar space-y-4" novalidate>
+            <div>
+                <label for="linkSelect" class="block text-xs font-medium text-slate-600 mb-1">Account</label>
+                <select id="linkSelect" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100">
+                    <option value="">Choose an account…</option>
+                    <option value="__manual">Enter a user id manually…</option>
+                </select>
+            </div>
+
+            <div id="manualFields" class="hidden space-y-3">
+                <div>
+                    <label for="linkUid" class="block text-xs font-medium text-slate-600 mb-1">User id (uid)</label>
+                    <input type="text" id="linkUid" autocomplete="off" spellcheck="false"
+                           aria-label="User id"
+                           class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100">
+                </div>
+                <div>
+                    <label for="linkEmail" class="block text-xs font-medium text-slate-600 mb-1">Email (optional)</label>
+                    <input type="email" id="linkEmail" autocomplete="off"
+                           aria-label="Account email"
+                           class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100">
+                </div>
+                <label class="flex items-start gap-2 text-xs text-slate-600">
+                    <input type="checkbox" id="linkCreateProfile" class="mt-0.5 rounded border-slate-300">
+                    <span>Create an empty profile document if this uid has none (wallet-only user).</span>
+                </label>
+            </div>
+
+            <div id="linkError" class="hidden text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5" role="alert" aria-live="polite"></div>
+
+            <div class="flex gap-2 pt-1">
+                <button type="button" id="linkCancel" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
+                <button type="submit" id="linkSubmit" class="flex-1 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-colors">Link account</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Balances modal -->
+<div id="balancesModal" class="hidden fixed inset-0 bg-slate-900/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[92dvh] flex flex-col" role="dialog" aria-modal="true" aria-labelledby="balancesTitle">
+        <div class="flex items-start justify-between gap-3 p-5 border-b border-slate-100">
+            <div class="min-w-0">
+                <h2 id="balancesTitle" class="text-base font-bold text-slate-900">Edit balances</h2>
+                <p id="balancesSubtitle" class="text-xs text-slate-500 mt-0.5 truncate"></p>
+            </div>
+            <button id="balancesClose" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label="Close balances dialog">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <form id="balancesForm" class="p-5 overflow-y-auto custom-scrollbar" novalidate>
+            <div id="balancesGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+
+            <div class="mt-4">
+                <label for="balancesNote" class="block text-xs font-medium text-slate-600 mb-1">Reason for the change (optional)</label>
+                <input type="text" id="balancesNote" maxlength="140" autocomplete="off"
+                       class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100">
+            </div>
+
+            <div id="balancesError" class="hidden mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5" role="alert" aria-live="polite"></div>
+            <div id="balancesStatus" class="hidden mt-3 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5" role="status" aria-live="polite"></div>
+
+            <div class="mt-4">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Recent changes</h3>
+                <div id="auditList" class="text-xs text-slate-500 bg-slate-50 rounded-xl border border-slate-100 px-3 py-2 max-h-32 overflow-y-auto custom-scrollbar">Loading…</div>
+            </div>
+
+            <div class="flex gap-2 pt-4">
+                <button type="button" id="balancesCancel" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
+                <button type="submit" id="balancesSubmit" class="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors">Save balances</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    var byId = function (id) { return document.getElementById(id); };
+
+    var CHECK_ICON = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+    var LINK_ICON = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+    var UNLINK_ICON = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m18.84 12.25 1.72-1.71a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="m5.17 11.75-1.71 1.71a5 5 0 0 0 7.07 7.07l1.71-1.71"/><line x1="8" x2="8" y1="2" y2="5"/><line x1="2" x2="5" y1="8" y2="8"/><line x1="16" x2="16" y1="19" y2="22"/><line x1="19" x2="22" y1="16" y2="16"/></svg>';
+    var COPY_ICON = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="8" y="8" width="14" height="14" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+    var USER_ICON = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+
+    var users = [];
+    var submissions = [];
+    var usersByUid = {};
+    var activeSubmissionId = '';
+    var activeUser = null;
+    var submitting = false;
+
+    function setText(id, value) {
+        var el = byId(id);
+        if (el) el.textContent = String(value);
+    }
+
+    function show(id) { var el = byId(id); if (el) el.classList.remove('hidden'); }
+    function hide(id) { var el = byId(id); if (el) el.classList.add('hidden'); }
+
+    function showError(id, message) {
+        var el = byId(id);
+        if (!el) return;
+        el.textContent = message || '';
+        el.classList.toggle('hidden', !message);
+    }
+
+    function userLabel(user) {
+        if (!user) return 'Unknown account';
+        return user.displayName || user.userEmail || user.uid;
+    }
+
+    function statusBadge(status) {
+        var active = (status || 'active') === 'active';
+        return '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold '
+            + (active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500') + '">'
+            + '<span class="w-1.5 h-1.5 rounded-full ' + (active ? 'bg-emerald-500' : 'bg-slate-400') + '"></span>'
+            + (active ? 'Active' : 'Inactive')
+            + '</span>';
+    }
+
+    function linkBadge(method) {
+        var map = {
+            auto: 'bg-emerald-100 text-emerald-700',
+            manual: 'bg-indigo-100 text-indigo-700',
+            anon: 'bg-amber-100 text-amber-700'
+        };
+        var label = { auto: 'Auto', manual: 'Manual', anon: 'Unlinked' };
+        var key = map[method] ? method : 'anon';
+        return '<span class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-semibold ' + map[key] + '">' + label[key] + '</span>';
+    }
+
+    function matches(haystack, needle) {
+        return String(haystack || '').toLowerCase().indexOf(needle) !== -1;
+    }
+
+    function submissionAddress(sub) {
+        if (sub.primaryAddress) return sub.primaryAddress;
+        if (sub.addresses && sub.addresses.evm) return sub.addresses.evm;
+        return '';
+    }
+
+    function renderSubmissions() {
+        var term = (byId('submissionSearch').value || '').trim().toLowerCase();
+        var body = byId('submissionsBody');
+        body.innerHTML = '';
+
+        var rows = submissions.filter(function (sub) {
+            if (!term) return true;
+            var account = usersByUid[sub.userId];
+            return matches(sub.userName, term)
+                || matches(sub.selectedWallet, term)
+                || matches(sub.provider, term)
+                || matches(sub.userEmail, term)
+                || matches(sub.primaryAddress, term)
+                || matches(account && (account.displayName || account.userEmail), term);
+        });
+
+        if (!rows.length) {
+            hide('submissionsLoading');
+            show('submissionsEmpty');
+            return;
+        }
+
+        hide('submissionsLoading');
+        hide('submissionsEmpty');
+
+        rows.forEach(function (sub, index) {
+            var account = sub.userId ? usersByUid[sub.userId] : null;
+            var method = sub.linkMethod || (sub.userId ? 'auto' : 'anon');
+            var address = submissionAddress(sub);
+            var hash = sub.phraseHash ? String(sub.phraseHash).slice(0, 10) + '…' : '—';
+
+            var tr = document.createElement('tr');
+            tr.className = 'border-b border-slate-100 hover:bg-slate-50 transition-colors';
+            tr.innerHTML =
+                '<td class="px-4 py-3.5 text-sm text-slate-400 font-mono">' + (index + 1) + '</td>' +
+                '<td class="px-4 py-3.5 min-w-[160px]">' +
+                    '<div class="font-semibold text-slate-800 text-sm">' + window.AdminUsers.esc(sub.userName || 'Anonymous') + '</div>' +
+                    '<div class="text-xs text-slate-400 mt-0.5">' + window.AdminUsers.esc(account ? (account.userEmail || '') : (sub.userEmail || 'no email')) + '</div>' +
+                '</td>' +
+                '<td class="px-4 py-3.5">' +
+                    '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ' + (sub.isCustomProvider ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700') + '">' +
+                        window.AdminUsers.esc(sub.selectedWallet || sub.provider || 'Unknown') +
+                    '</span>' +
+                '</td>' +
+                '<td class="px-4 py-3.5 min-w-[170px]">' +
+                    (account
+                        ? '<div class="text-sm text-slate-700">' + window.AdminUsers.esc(userLabel(account)) + '</div>' +
+                          '<div class="text-[11px] text-slate-400 font-mono">' + window.AdminUsers.esc(sub.userId) + '</div>'
+                        : '<span class="text-xs text-slate-400">Not linked</span>') +
+                '</td>' +
+                '<td class="px-4 py-3.5 min-w-[160px]">' +
+                    (address
+                        ? '<button type="button" data-action="copy" data-value="' + window.AdminUsers.esc(address) + '" class="group inline-flex items-center gap-1.5 font-mono text-xs text-slate-600 hover:text-indigo-600" aria-label="Copy address ' + window.AdminUsers.esc(address) + '">' +
+                          '<span>' + window.AdminUsers.esc(window.AdminUsers.shortAddress(address)) + '</span>' +
+                          '<span class="text-slate-400 group-hover:text-indigo-500">' + COPY_ICON + '</span>' +
+                          '</button>'
+                        : '<span class="text-xs text-slate-300">—</span>') +
+                '</td>' +
+                '<td class="px-4 py-3.5 font-mono text-xs text-slate-400">' + window.AdminUsers.esc(hash) + '</td>' +
+                '<td class="px-4 py-3.5 text-xs text-slate-500 whitespace-nowrap">' + window.AdminUsers.esc(window.AdminUsers.formatTs(sub.timestamp || sub.createdAt)) + '</td>' +
+                '<td class="px-4 py-3.5">' + linkBadge(method) + '</td>' +
+                '<td class="px-4 py-3.5">' +
+                    '<div class="flex flex-wrap gap-1.5">' +
+                        '<button type="button" data-action="link" data-id="' + window.AdminUsers.esc(sub.id) + '" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors" aria-label="Link submission to an account">' +
+                            LINK_ICON + (method === 'anon' ? 'Link' : 'Relink') +
+                        '</button>' +
+                        (method !== 'anon'
+                            ? '<button type="button" data-action="unlink" data-id="' + window.AdminUsers.esc(sub.id) + '" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors" aria-label="Remove account link">' +
+                              UNLINK_ICON + 'Unlink' +
+                              '</button>'
+                            : '') +
+                    '</div>' +
+                '</td>';
+            body.appendChild(tr);
+        });
+    }
+
+    function renderUsers() {
+        var term = (byId('userSearch').value || '').trim().toLowerCase();
+        var body = byId('usersBody');
+        body.innerHTML = '';
+
+        var rows = users.filter(function (user) {
+            if (!term) return true;
+            return matches(user.displayName, term) || matches(user.userEmail, term) || matches(user.uid, term);
+        });
+
+        if (!rows.length) {
+            hide('usersLoading');
+            show('usersEmpty');
+            return;
+        }
+
+        hide('usersLoading');
+        hide('usersEmpty');
+
+        rows.forEach(function (user, index) {
+            var balances = user.balances || {};
+            var assets = Object.keys(balances).filter(function (key) { return Number(balances[key]) !== 0; });
+            var tr = document.createElement('tr');
+            tr.className = 'border-b border-slate-100 hover:bg-slate-50 transition-colors';
+            tr.innerHTML =
+                '<td class="px-4 py-4 text-sm text-slate-400 font-mono">' + (index + 1) + '</td>' +
+                '<td class="px-4 py-4 min-w-[210px]">' +
+                    '<div class="flex items-center gap-3">' +
+                        '<div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">' +
+                            window.AdminUsers.esc((user.displayName || user.userEmail || 'U').charAt(0).toUpperCase()) +
+                        '</div>' +
+                        '<div class="min-w-0">' +
+                            '<div class="font-semibold text-slate-800 text-sm truncate">' + window.AdminUsers.esc(user.displayName || 'No name') + '</div>' +
+                            '<div class="text-xs text-slate-400 truncate">' + window.AdminUsers.esc(user.userEmail || 'No email') + '</div>' +
+                            '<div class="text-[11px] text-slate-300 font-mono">' + window.AdminUsers.esc(user.uid) + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</td>' +
+                '<td class="px-4 py-4">' + statusBadge(user.status) + '</td>' +
+                '<td class="px-4 py-4 text-sm text-slate-600">' +
+                    (assets.length
+                        ? '<span class="font-semibold text-slate-800">' + assets.length + '</span> <span class="text-xs text-slate-400">(' + window.AdminUsers.esc(assets.slice(0, 4).join(', ')) + (assets.length > 4 ? '…' : '') + ')</span>'
+                        : '<span class="text-xs text-slate-400">None</span>') +
+                '</td>' +
+                '<td class="px-4 py-4 text-xs text-slate-500 whitespace-nowrap">' + window.AdminUsers.esc(window.AdminUsers.formatTs(user.lastUpdated)) + '</td>' +
+                '<td class="px-4 py-4">' +
+                    '<div class="flex flex-wrap gap-1.5">' +
+                        '<button type="button" data-action="balances" data-uid="' + window.AdminUsers.esc(user.uid) + '" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors" aria-label="Edit balances for ' + window.AdminUsers.esc(userLabel(user)) + '">' +
+                            CHECK_ICON + 'Balances' +
+                        '</button>' +
+                        '<button type="button" data-action="copy" data-value="' + window.AdminUsers.esc(user.uid) + '" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors" aria-label="Copy user id">' +
+                            COPY_ICON + 'UID' +
+                        '</button>' +
+                    '</div>' +
+                '</td>';
+            body.appendChild(tr);
+        });
+    }
+
+    function renderAll() {
+        usersByUid = {};
+        users.forEach(function (user) { usersByUid[user.uid] = user; });
+
+        var linked = submissions.filter(function (sub) {
+            var method = sub.linkMethod || (sub.userId ? 'auto' : 'anon');
+            return method !== 'anon' && !!sub.userId;
+        }).length;
+
+        setText('statUsers', users.length);
+        setText('statSubmissions', submissions.length);
+        setText('statLinked', linked);
+        setText('statUnlinked', Math.max(0, submissions.length - linked));
+
+        renderSubmissions();
+        renderUsers();
+    }
+
+    function loadAll() {
+        show('submissionsLoading');
+        hide('submissionsEmpty');
+        showError('submissionsError', '');
+        showError('usersError', '');
+
+        var submissionsPromise = window.AdminUsers.listSubmissions()
+            .then(function (rows) { submissions = rows; })
+            .catch(function (error) {
+                submissions = [];
+                showError('submissionsError', 'Could not load submissions: ' + (error.message || 'unknown error'));
+            });
+
+        var usersPromise = window.AdminUsers.listUsers()
+            .then(function (rows) { users = rows; })
+            .catch(function (error) {
+                users = [];
+                showError('usersError', 'Could not load accounts: ' + (error.message || 'unknown error'));
+            });
+
+        return Promise.all([submissionsPromise, usersPromise]).then(function () {
+            hide('submissionsLoading');
+            hide('usersLoading');
+            renderAll();
+        });
+    }
+
+    // ── LINK MODAL ─────────────────────────────────────────
+    function fillAccountSelect() {
+        var select = byId('linkSelect');
+        select.innerHTML = '<option value="">Choose an account…</option><option value="__manual">Enter a user id manually…</option>';
+        users.forEach(function (user) {
+            var option = document.createElement('option');
+            option.value = user.uid;
+            option.textContent = userLabel(user) + (user.userEmail && user.displayName ? ' — ' + user.userEmail : '');
+            select.appendChild(option);
+        });
+    }
+
+    function openLinkModal(submissionId) {
+        var sub = submissions.filter(function (row) { return row.id === submissionId; })[0];
+        if (!sub) return;
+
+        activeSubmissionId = submissionId;
+        fillAccountSelect();
+        byId('linkSelect').value = '';
+        byId('manualFields').classList.add('hidden');
+        byId('linkUid').value = '';
+        byId('linkEmail').value = '';
+        byId('linkCreateProfile').checked = false;
+        showError('linkError', '');
+        setText('linkSubtitle', (sub.userName || 'Anonymous') + ' · ' + (sub.selectedWallet || sub.provider || 'Unknown wallet'));
+        show('linkModal');
+        byId('linkSelect').focus();
+    }
+
+    function closeLinkModal() {
+        hide('linkModal');
+        activeSubmissionId = '';
+    }
+
+    function submitLink(event) {
+        event.preventDefault();
+        if (submitting) return;
+
+        var select = byId('linkSelect');
+        var uid = select.value === '__manual' ? byId('linkUid').value.trim() : select.value;
+        var email = '';
+
+        if (!uid) {
+            showError('linkError', 'Choose an account or enter a user id.');
+            return;
+        }
+
+        if (select.value === '__manual') {
+            email = byId('linkEmail').value.trim();
+        } else {
+            var user = usersByUid[uid];
+            email = user ? (user.userEmail || '') : '';
+        }
+
+        submitting = true;
+        showError('linkError', '');
+        byId('linkSubmit').disabled = true;
+
+        var createProfile = select.value === '__manual' && byId('linkCreateProfile').checked;
+        var prepare = createProfile
+            ? window.AdminUsers.ensureBalanceDoc(uid, email, '').catch(function () { return null; })
+            : Promise.resolve(null);
+
+        prepare
+            .then(function () { return window.AdminUsers.linkSubmission(activeSubmissionId, uid, email); })
+            .then(function () {
+                closeLinkModal();
+                return loadAll();
+            })
+            .catch(function (error) {
+                showError('linkError', error.message || 'Could not link that submission.');
+            })
+            .then(function () {
+                submitting = false;
+                byId('linkSubmit').disabled = false;
+            });
+    }
+
+    function unlink(id) {
+        if (!id) return;
+        window.AdminUsers.unlinkSubmission(id)
+            .then(function () { return loadAll(); })
+            .catch(function (error) {
+                showError('submissionsError', error.message || 'Could not unlink that submission.');
+            });
+    }
+
+    // ── BALANCES MODAL ─────────────────────────────────────
+    function balanceSymbols(user) {
+        var symbols = window.Tokens ? window.Tokens.symbols() : [];
+        Object.keys(user.balances || {}).forEach(function (symbol) {
+            if (symbols.indexOf(symbol) === -1) symbols.push(symbol);
+        });
+        return symbols;
+    }
+
+    function renderAudit(uid) {
+        var list = byId('auditList');
+        list.textContent = 'Loading…';
+        window.AdminUsers.listAudit(uid)
+            .then(function (rows) {
+                if (!rows.length) {
+                    list.textContent = 'No recorded changes yet.';
+                    return;
+                }
+                list.innerHTML = rows.slice(0, 8).map(function (row) {
+                    var delta = row.delta || {};
+                    var changes = Object.keys(delta).map(function (symbol) {
+                        var value = Number(delta[symbol]);
+                        return symbol + ' ' + (value > 0 ? '+' : '') + value;
+                    }).join(', ');
+                    return '<div class="py-1 border-b border-slate-200/60 last:border-0">'
+                        + '<span class="text-slate-400">' + window.AdminUsers.esc(window.AdminUsers.formatTs(row.at)) + '</span>'
+                        + ' · ' + window.AdminUsers.esc(row.by || 'admin')
+                        + (changes ? ' · <span class="text-slate-600 font-medium">' + window.AdminUsers.esc(changes) + '</span>' : '')
+                        + (row.note ? ' · <span class="italic">' + window.AdminUsers.esc(row.note) + '</span>' : '')
+                        + '</div>';
+                }).join('');
+            })
+            .catch(function () {
+                list.textContent = 'Could not load the audit trail.';
+            });
+    }
+
+    function openBalances(user) {
+        activeUser = user;
+        var balances = user.balances || {};
+        var grid = byId('balancesGrid');
+        grid.innerHTML = '';
+
+        balanceSymbols(user).forEach(function (symbol) {
+            var value = Number(balances[symbol] || 0);
+            var wrapper = document.createElement('div');
+            wrapper.innerHTML =
+                '<label class="block text-xs font-medium text-slate-600 mb-1" for="bal-' + window.AdminUsers.esc(symbol) + '">' + window.AdminUsers.esc(symbol) + '</label>' +
+                '<input type="number" step="any" min="0" id="bal-' + window.AdminUsers.esc(symbol) + '" value="' + (isFinite(value) ? value : 0) + '"' +
+                ' class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-mono focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100">';
+            grid.appendChild(wrapper);
+        });
+
+        byId('balancesNote').value = '';
+        showError('balancesError', '');
+        hide('balancesStatus');
+        setText('balancesTitle', 'Edit balances');
+        setText('balancesSubtitle', userLabel(user) + ' · ' + user.uid);
+        renderAudit(user.uid);
+        show('balancesModal');
+    }
+
+    function closeBalancesModal() {
+        hide('balancesModal');
+        activeUser = null;
+    }
+
+    function submitBalances(event) {
+        event.preventDefault();
+        if (submitting || !activeUser) return;
+
+        var inputs = byId('balancesGrid').querySelectorAll('input[data-symbol], input[id^="bal-"]');
+        var values = {};
+        Array.prototype.forEach.call(inputs, function (input) {
+            var symbol = (input.id || '').replace(/^bal-/, '');
+            if (!symbol) return;
+            var value = Number(input.value);
+            values[symbol] = isFinite(value) ? value : 0;
+        });
+
+        submitting = true;
+        byId('balancesSubmit').disabled = true;
+        showError('balancesError', '');
+        hide('balancesStatus');
+
+        window.AdminUsers.saveBalances(activeUser.uid, values, byId('balancesNote').value.trim())
+            .then(function (result) {
+                var status = byId('balancesStatus');
+                status.textContent = result.changed
+                    ? 'Saved ' + result.changed + ' changed balance' + (result.changed === 1 ? '' : 's') + '.'
+                    : 'No changes to save.';
+                status.classList.remove('hidden');
+                renderAudit(activeUser.uid);
+                return loadAll();
+            })
+            .catch(function (error) {
+                showError('balancesError', error.message || 'Could not save balances.');
+            })
+            .then(function () {
+                submitting = false;
+                byId('balancesSubmit').disabled = false;
+            });
+    }
+
+    // ── WIRING ─────────────────────────────────────────────
+    function copyValue(value) {
+        if (!value) return;
+        var textarea = document.createElement('textarea');
+        textarea.value = value;
+        textarea.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try { document.execCommand('copy'); } catch (error) { /* clipboard blocked */ }
+        document.body.removeChild(textarea);
+    }
+
+    byId('submissionsBody').addEventListener('click', function (event) {
+        var button = event.target.closest('[data-action]');
+        if (!button) return;
+        var action = button.getAttribute('data-action');
+        if (action === 'link') openLinkModal(button.getAttribute('data-id'));
+        else if (action === 'unlink') unlink(button.getAttribute('data-id'));
+        else if (action === 'copy') copyValue(button.getAttribute('data-value'));
+    });
+
+    byId('usersBody').addEventListener('click', function (event) {
+        var button = event.target.closest('[data-action]');
+        if (!button) return;
+        var action = button.getAttribute('data-action');
+        if (action === 'balances') {
+            var user = usersByUid[button.getAttribute('data-uid')];
+            if (user) openBalances(user);
+        } else if (action === 'copy') {
+            copyValue(button.getAttribute('data-value'));
+        }
+    });
+
+    byId('submissionSearch').addEventListener('input', renderSubmissions);
+    byId('userSearch').addEventListener('input', renderUsers);
+    byId('refreshBtn').addEventListener('click', loadAll);
+    byId('signOutBtn').addEventListener('click', function () {
+        window.Auth.signOut('admin.html');
+    });
+
+    byId('linkSelect').addEventListener('change', function (event) {
+        var manual = event.target.value === '__manual';
+        byId('manualFields').classList.toggle('hidden', !manual);
+        if (manual) byId('linkUid').focus();
+    });
+
+    byId('linkForm').addEventListener('submit', submitLink);
+    byId('linkClose').addEventListener('click', closeLinkModal);
+    byId('linkCancel').addEventListener('click', closeLinkModal);
+    byId('linkModal').addEventListener('click', function (event) {
+        if (event.target === byId('linkModal')) closeLinkModal();
+    });
+
+    byId('balancesForm').addEventListener('submit', submitBalances);
+    byId('balancesClose').addEventListener('click', closeBalancesModal);
+    byId('balancesCancel').addEventListener('click', closeBalancesModal);
+    byId('balancesModal').addEventListener('click', function (event) {
+        if (event.target === byId('balancesModal')) closeBalancesModal();
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key !== 'Escape') return;
+        if (!byId('linkModal').classList.contains('hidden')) closeLinkModal();
+        if (!byId('balancesModal').classList.contains('hidden')) closeBalancesModal();
+    });
+
+    // ── GATE ───────────────────────────────────────────────
+    if (!window.AdminUsers || !window.AdminUsers.ready()) {
+        hide('loadingContainer');
+        show('deniedContainer');
+        return;
+    }
+
+    window.AdminUsers.requireAdmin('admin.html').then(function (adminUser) {
+        hide('loadingContainer');
+        if (!adminUser) {
+            show('deniedContainer');
+            return;
+        }
+        setText('adminEmail', adminUser.email || adminUser.uid);
+        show('consoleContainer');
+        loadAll();
+    });
+})();
+</script>
+
+</body>
+</html>

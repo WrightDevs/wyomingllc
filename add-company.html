@@ -21,56 +21,49 @@
         }
     </script>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Firebase SDK (compat, pinned) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCnBgSQy4SsvmR73iedkHCWKoseUyALS6s",
-            authDomain: "wyominglimited0.firebaseapp.com",
-            projectId: "wyominglimited0",
-            storageBucket: "wyominglimited0.firebasestorage.app",
-            messagingSenderId: "580988653712",
-            appId: "1:580988653712:web:c3b28d07bf8409f93ec815",
-            measurementId: "G-MT8SLSYM3S"
-        };
-        firebase.initializeApp(firebaseConfig);
-
-        // Auth gate — redirect to login if not logged in
-        // Runs before Alpine so we know the user synchronously
+        // Auth gate — runs before Alpine so the page stays hidden until resolved.
         window.__acUser = null;
 
-        firebase.auth().onAuthStateChanged(function(user) {
-            if (!user) {
-                // Not logged in — send to login
-                window.location.href = 'index.html';
-                return;
-            }
-            window.__acUser = user;
-
-            // Pre-fill Alpine data now that auth is confirmed
-            const alpineEl = document.querySelector('[x-data]');
-            if (alpineEl && alpineEl._x_dataStack) {
-                const data = alpineEl._x_dataStack[0];
-                if (data) {
-                    data.currentUser = { uid: user.uid, email: user.email, name: user.displayName || '' };
-                    if (user.displayName) {
-                        const parts = user.displayName.trim().split(' ');
-                        data.firstName = parts[0] || '';
-                        data.lastName  = parts.slice(1).join(' ') || '';
-                    }
+        if (window.fb && window.fb.ready) {
+            window.fb.auth.onAuthStateChanged(function (user) {
+                if (!user) {
+                    window.location.replace('login.html');
+                    return;
                 }
-            }
+                window.__acUser = user;
+                document.getElementById('page-body').style.visibility = '';
+            });
+        } else {
+            document.addEventListener('DOMContentLoaded', function () {
+                document.getElementById('page-body').style.visibility = '';
+            });
+        }
 
-            // Show page
-            document.getElementById('page-body').style.visibility = '';
+        // Prefill once Alpine has initialised (Alpine 3 API).
+        document.addEventListener('alpine:initialized', function () {
+            var alpineEl = document.querySelector('[x-data]');
+            if (!alpineEl || !window.__acUser || !window.Alpine) return;
+            var data = window.Alpine.$data(alpineEl);
+            var user = window.__acUser;
+            data.currentUser = { uid: user.uid, email: user.email, name: user.displayName || '' };
+            if (user.displayName) {
+                var parts = user.displayName.trim().split(' ');
+                data.firstName = parts[0] || '';
+                data.lastName = parts.slice(1).join(' ') || '';
+            }
         });
     </script>
 
-    <!-- Alpine — defer so our auth check above can set window.__acUser first -->
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <!-- Alpine — defer so the auth gate above runs first -->
+    <script src="https://unpkg.com/alpinejs@3.13.10/dist/cdn.min.js" defer></script>
 </head>
 
 <body id="page-body"
@@ -126,7 +119,7 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
                     <a href="dashboard.html">
-                        <img src="../assets/wyoming.png" alt="Wyoming LLC Attorney" class="h-9 w-auto" />
+                        <img src="assets/wyoming.png" alt="Wyoming LLC Attorney" class="h-9 w-auto" />
                     </a>
                     <div class="hidden sm:block border-l pl-4">
                         <p class="text-sm font-semibold text-gray-800">Add New Company</p>
@@ -495,9 +488,9 @@
         errEl.classList.add('hidden');
         sucEl.classList.add('hidden');
 
-        // Get Alpine data
+        // Get Alpine data (Alpine 3)
         const alpineEl = document.querySelector('[x-data]');
-        const data = alpineEl?._x_dataStack?.[0];
+        const data = (alpineEl && window.Alpine) ? window.Alpine.$data(alpineEl) : null;
         if (!data) { errEl.textContent = 'Form error. Please refresh the page.'; errEl.classList.remove('hidden'); return; }
 
         // Validate
@@ -507,11 +500,11 @@
         if (!data.lastName)    { errEl.textContent = 'Please enter your last name.';   errEl.classList.remove('hidden'); return; }
 
         // Confirm user is still logged in
-        const user = firebase.auth().currentUser;
+        const user = window.__acUser || (window.fb && window.fb.auth.currentUser);
         if (!user) {
             errEl.textContent = 'Session expired. Please log in again.';
             errEl.classList.remove('hidden');
-            setTimeout(() => window.location.href = 'index.html', 2000);
+            setTimeout(() => window.location.href = 'login.html', 1500);
             return;
         }
 
@@ -520,7 +513,7 @@
         submitTxt.textContent = 'Submitting...';
 
         try {
-            await firebase.firestore().collection('companies').add({
+            await window.fb.db.collection('companies').add({
                 formationState:  data.formationState  || 'Wyoming',
                 entityType:      data.entityType,
                 companyName:     data.companyName,
@@ -537,7 +530,7 @@
                 partnerCode:     data.partnerCode      || '',
                 selectedCountry: data.selectedCountry || 'US',
                 userId:          user.uid,
-                createdAt:       firebase.firestore.FieldValue.serverTimestamp(),
+                createdAt:       window.fb.stamp(),
                 status:          'pending',
                 companyId:       'COMP-' + Date.now() + Math.random().toString(36).substr(2, 9)
             });

