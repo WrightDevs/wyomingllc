@@ -5,15 +5,15 @@ export function Brand({ tone = 'dark', compact = false }: { tone?: 'dark' | 'lig
     return (
         <Link
             href="/"
-            className="group flex items-center gap-2.5 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ember-400"
+            className="group flex items-center gap-2.5 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-400"
             aria-label="Wyoming LLC Attorney — home"
         >
             <span
                 className={cn(
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] border',
                     tone === 'dark'
-                        ? 'border-pine-900/15 bg-pine-900 text-bone'
-                        : 'border-white/20 bg-bone text-pine-950'
+                        ? 'border-primary/15 bg-primary text-white'
+                        : 'border-white/20 bg-white/10 text-white'
                 )}
             >
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
@@ -25,7 +25,7 @@ export function Brand({ tone = 'dark', compact = false }: { tone?: 'dark' | 'lig
                 <span
                     className={cn(
                         'display block text-[17px] font-semibold tracking-tight',
-                        tone === 'dark' ? 'text-pine-950' : 'text-bone'
+                        tone === 'dark' ? 'text-slate-800' : 'text-white'
                     )}
                 >
                     Wyoming LLC
@@ -34,7 +34,7 @@ export function Brand({ tone = 'dark', compact = false }: { tone?: 'dark' | 'lig
                     <span
                         className={cn(
                             'mt-1 block font-mono text-[9px] font-semibold uppercase tracking-[0.2em]',
-                            tone === 'dark' ? 'text-pine-900/50' : 'text-pine-100/60'
+                            tone === 'dark' ? 'text-slate-500' : 'text-slate-200'
                         )}
                     >
                         Filings &amp; Records

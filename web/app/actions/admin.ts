@@ -310,3 +310,35 @@ export async function stopImpersonationAction(): Promise<void> {
     await endImpersonation(viewer);
     redirect('/admin');
 }
+
+export async function saveDepositAddressAction(_prev: FormState, formData: FormData): Promise<FormState> {
+    const viewer = await requireAdmin();
+    const symbol = String(formData.get('symbol') || '').trim().toUpperCase();
+    const network = String(formData.get('network') || '').trim();
+    const address = String(formData.get('address') || '').trim();
+    const memo = String(formData.get('memo') || '').trim();
+
+    if (!symbol) return { ok: false, message: 'Please select a currency symbol.' };
+    if (!address) return { ok: false, message: 'Deposit address cannot be empty.' };
+
+    try {
+        await q`
+            insert into deposit_addresses (symbol, network, address, memo, updated_at, updated_by)
+            values (${symbol}, ${network}, ${address}, ${memo}, now(), ${viewer.user.email})
+            on conflict (symbol) do update
+            set network = excluded.network,
+                address = excluded.address,
+                memo = excluded.memo,
+                updated_at = now(),
+                updated_by = excluded.updated_by
+        `;
+        await audit(viewer, 'deposit_address.update', null, { symbol, network, address, memo });
+    } catch (err) {
+        return { ok: false, message: friendlyError(err) };
+    }
+
+    revalidatePath('/admin/wallets');
+    revalidatePath('/dashboard/wallets/receive');
+    return { ok: true, message: `Updated deposit address for ${symbol}.` };
+}
+

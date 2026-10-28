@@ -126,44 +126,50 @@ export default function HomePage() {
 
             <main>
                 {/* Hero */}
-                <section className="relative overflow-hidden border-b border-pine-900/10">
-                    <div className="contour absolute inset-0" aria-hidden="true" />
-                    <div className="absolute inset-0 bg-ledger-grid bg-ledger opacity-40" aria-hidden="true" />
+                <section className="relative overflow-hidden border-b border-hairline bg-gradient-to-br from-primary-deep via-primary to-teal-700">
+                    <div className="absolute inset-0 opacity-10">
+                        <div className="absolute top-20 right-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
+                        <div className="absolute bottom-10 left-10 w-96 h-96 bg-accent-cta rounded-full blur-3xl"></div>
+                    </div>
 
-                    <div className="shell relative grid gap-12 py-14 sm:py-20 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16">
+                    <div className="shell relative grid gap-12 py-20 lg:py-28 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16">
                         <div className="max-w-xl">
-                            <p className="eyebrow flex items-center gap-2">
-                                <span className="inline-block h-1.5 w-1.5 rounded-full bg-ember-500" aria-hidden="true" />
-                                Wyoming filings · Sheridan, WY
-                            </p>
-                            <h1 className="display mt-3 text-[2.5rem] leading-[1.04] text-pine-950 sm:text-6xl">
-                                A Wyoming LLC,
-                                <span className="block text-pine-700">filed cleanly.</span>
-                            </h1>
-                            <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-pine-900/70 sm:text-base">
+                            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
+                                <span className="inline-block w-2 h-2 bg-accent-cta rounded-full"></span>
+                                <span className="text-white/90 text-sm">Wyoming filings · Sheridan, WY</span>
+                            </div>
+                            <div className="mb-4">
+                                <div className="text-accent-cta text-sm font-bold uppercase tracking-widest mb-3">Limited Liability, Limitless Potential ℠</div>
+                                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4">
+                                    Register Your Business in
+                                    <span className="bg-gradient-to-r from-accent-cta to-yellow-400 bg-clip-text text-transparent"> Wyoming</span>
+                                </h1>
+                                <p className="text-xl text-white/80">The Best State To Register Your Business</p>
+                            </div>
+                            <p className="mt-5 max-w-lg text-lg text-white/80 leading-relaxed">
                                 Articles of Organization, a registered agent and the annual report that follows — prepared once, with the
                                 record kept in an account you can actually open.
                             </p>
 
-                            <div className="mt-7 flex flex-col gap-2.5 sm:flex-row sm:items-center">
-                                <Link href="/signup" className="btn-primary">
-                                    Start filing — $99
-                                    <Icon name="arrow" className="h-4 w-4" />
+                            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                                <Link href="/signup" className="bg-gradient-to-r from-accent-cta to-yellow-500 text-white px-10 py-4 rounded-lg text-lg font-bold hover:shadow-2xl transform hover:scale-105 transition inline-flex items-center justify-center gap-2">
+                                    Start Your Business
+                                    <Icon name="arrow" className="h-5 w-5" />
                                 </Link>
-                                <Link href="#pricing" className="btn-outline">
+                                <Link href="#pricing" className="px-10 py-4 border border-white/40 text-white rounded-lg text-lg font-semibold hover:bg-white/10 transition inline-flex items-center justify-center">
                                     See what the state charges
                                 </Link>
                             </div>
 
-                            <dl className="mt-9 grid max-w-md grid-cols-2 gap-x-6 gap-y-4 border-t border-pine-900/10 pt-6">
+                            <dl className="mt-10 grid max-w-md grid-cols-2 gap-x-6 gap-y-4 border-t border-white/20 pt-6">
                                 {facts.map((fact) => (
                                     <div key={fact.label}>
-                                        <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-pine-900/45">
+                                        <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-white/60">
                                             {fact.label}
                                         </dt>
                                         <dd className="mt-0.5 flex items-baseline gap-2">
-                                            <span className="display text-xl text-pine-950">{fact.value}</span>
-                                            <span className="text-[11px] text-pine-900/45">{fact.note}</span>
+                                            <span className="text-xl font-bold text-white">{fact.value}</span>
+                                            <span className="text-[11px] text-white/60">{fact.note}</span>
                                         </dd>
                                     </div>
                                 ))}
@@ -172,69 +178,21 @@ export default function HomePage() {
 
                         {/* Filing sheet — the hero artifact */}
                         <div className="relative mx-auto w-full max-w-md lg:mx-0">
-                            <div
-                                className="absolute -inset-x-3 -top-3 bottom-3 rounded-[20px] border border-pine-900/10 bg-white/50"
-                                aria-hidden="true"
-                            />
-                            <article className="card relative overflow-hidden">
-                                <div className="flex items-center justify-between gap-3 border-b border-dashed border-pine-900/20 bg-pine-50/70 px-5 py-3">
-                                    <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-pine-900/55">
-                                        Articles of Organization
-                                    </p>
-                                    <p className="mono text-[10px] text-pine-900/40">Form WY-LLC-01</p>
+                            <div className="bg-white/95 backdrop-blur rounded-3xl p-8 shadow-2xl max-w-md w-full border border-white/20">
+                                <div className="text-center">
+                                    <div className="w-20 h-20 bg-gradient-to-br from-primary to-teal-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                                        <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-ink mb-3">Business Formations Made Safe and Easy</h3>
+                                    <div className="text-accent-cta text-5xl font-extrabold mb-1">+100,000</div>
+                                    <div className="text-ink-soft text-lg mb-6">Companies Formed</div>
+                                    <Link href="/signup" className="w-full bg-gradient-to-r from-primary to-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition inline-flex items-center justify-center">
+                                        Start Your Business
+                                    </Link>
                                 </div>
-
-                                <div className="space-y-4 px-5 py-5">
-                                    <div>
-                                        <p className="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-pine-900/40">
-                                            Name of limited liability company
-                                        </p>
-                                        <p className="display mt-1 text-lg text-pine-950">North Platte Holdings LLC</p>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <p className="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-pine-900/40">
-                                                State of formation
-                                            </p>
-                                            <p className="mt-1 text-sm font-medium text-pine-950">Wyoming</p>
-                                        </div>
-                                        <div>
-                                            <p className="font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-pine-900/40">
-                                                Registered agent
-                                            </p>
-                                            <p className="mt-1 text-sm font-medium text-pine-950">On file</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2 border-t border-pine-900/10 pt-4">
-                                        {[
-                                            ['Filing fee to the state', '$102.00'],
-                                            ['Preparation and submission', '$99.00'],
-                                            ['Annual report minimum', '$60.00']
-                                        ].map(([label, value]) => (
-                                            <div key={label} className="flex items-baseline justify-between gap-3">
-                                                <span className="text-[12px] text-pine-900/55">{label}</span>
-                                                <span className="mono text-[12px] font-medium text-pine-950">{value}</span>
-                                            </div>
-                                        ))}
-                                        <div className="flex items-baseline justify-between gap-3 border-t border-pine-900/10 pt-2">
-                                            <span className="text-[12px] font-semibold text-pine-950">Due at filing</span>
-                                            <span className="mono text-sm font-semibold text-pine-950">$201.00</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-end justify-between gap-3 pt-1">
-                                        <div>
-                                            <div className="h-8 w-32 border-b border-pine-900/25" aria-hidden="true" />
-                                            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.14em] text-pine-900/40">
-                                                Authorized signature
-                                            </p>
-                                        </div>
-                                        <span className="stamp">Filed · WY</span>
-                                    </div>
-                                </div>
-                            </article>
+                            </div>
                         </div>
                     </div>
                 </section>

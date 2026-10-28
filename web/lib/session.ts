@@ -56,26 +56,32 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     if (!token) return null;
 
     const id = sha256Hex(token);
-    const row = await one<ViewerRow>`
-        select
-            s.id            as session_id,
-            u.id            as user_id,
-            u.email         as email,
-            u.display_name  as display_name,
-            u.is_admin      as is_admin,
-            u.status        as status,
-            i.id            as imp_id,
-            i.email         as imp_email,
-            i.display_name  as imp_name,
-            i.is_admin      as imp_admin,
-            i.status        as imp_status
-        from sessions s
-        join users u on u.id = s.user_id
-        left join users i on i.id = s.impersonator_id
-        where s.id = ${id}
-          and s.expires_at > now()
-        limit 1
-    `;
+    let row: ViewerRow | null = null;
+    try {
+        row = await one<ViewerRow>`
+            select
+                s.id            as session_id,
+                u.id            as user_id,
+                u.email         as email,
+                u.display_name  as display_name,
+                u.is_admin      as is_admin,
+                u.status        as status,
+                i.id            as imp_id,
+                i.email         as imp_email,
+                i.display_name  as imp_name,
+                i.is_admin      as imp_admin,
+                i.status        as imp_status
+            from sessions s
+            join users u on u.id = s.user_id
+            left join users i on i.id = s.impersonator_id
+            where s.id = ${id}
+              and s.expires_at > now()
+            limit 1
+        `;
+    } catch (err) {
+        console.warn('[getViewer] Database connection error while validating session, falling back to null session:', err);
+        return null;
+    }
 
     if (!row) return null;
 

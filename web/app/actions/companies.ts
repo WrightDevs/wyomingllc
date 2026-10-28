@@ -69,6 +69,19 @@ export async function createCompanyAction(_prev: FormState, formData: FormData):
                 ${data.postalCode}, ${data.partnerCode}, 'pending'
             )
         `;
+
+        try {
+            const { sendNewFormationEmail } = await import('@/lib/email');
+            await sendNewFormationEmail({
+                email: data.email,
+                name: `${data.firstName} ${data.lastName}`.trim(),
+                companyName: data.companyName,
+                entityType: data.entityType || 'LLC',
+                formationState: data.formationState || 'Wyoming'
+            });
+        } catch (e) {
+            console.error('Failed to dispatch formation email:', e);
+        }
     } catch (error) {
         return { ok: false, message: friendlyError(error) };
     }

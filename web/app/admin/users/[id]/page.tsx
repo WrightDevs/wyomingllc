@@ -16,6 +16,7 @@ import {
     listCompanies,
     listWallets
 } from '@/lib/queries';
+import { isTransientDatabaseConnectionError, withReadRetry } from '@/lib/db';
 import { requireAdmin } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
@@ -24,15 +25,30 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
     const viewer = await requireAdmin();
     const { id } = await params;
 
-    const [record, balances, wallets, companies, balanceAudit, adminAudit, allWallets] = await Promise.all([
-        getUserRecord(id),
-        getBalances(id),
-        listWallets(id),
-        listCompanies(id),
-        listBalanceAudit(id),
-        listAdminAudit(id),
-        listAllWallets()
-    ]);
+    let data: Awaited<ReturnType<typeof loadAdminUserData>>;
+    try {
+        data = await withReadRetry(() => loadAdminUserData(id));
+    } catch (error) {
+        if (!isTransientDatabaseConnectionError(error)) throw error;
+
+        console.error(
+            '[admin/users] Database connection failed after retries:',
+            error instanceof Error ? error.message : 'Unknown connection error'
+        );
+        return (
+            <section role="status" aria-live="polite" className="card mx-auto max-w-xl p-5 sm:p-6">
+                <p className="eyebrow">Database connection</p>
+                <h1 className="display mt-1 text-xl text-pine-950">The account records could not be loaded</h1>
+                <p className="mt-2 text-sm text-pine-900/65">
+                    The database connection was interrupted. Check the Neon project and connection settings, then retry.
+                </p>
+                <Link href={`/admin/users/${encodeURIComponent(id)}`} className="btn-primary mt-4">
+                    Retry loading account
+                </Link>
+            </section>
+        );
+    }
+    const [record, balances, wallets, companies, balanceAudit, adminAudit, allWallets] = data;
 
     if (!record) notFound();
 
@@ -248,4 +264,16 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
             </div>
         </div>
     );
+}
+
+function loadAdminUserData(id: string) {
+    return Promise.all([
+        getUserRecord(id),
+        getBalances(id),
+        listWallets(id),
+        listCompanies(id),
+        listBalanceAudit(id),
+        listAdminAudit(id),
+        listAllWallets()
+    ]);
 }

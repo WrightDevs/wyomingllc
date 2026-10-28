@@ -155,3 +155,30 @@ export async function getCounts(userId: string): Promise<{ companies: number; wa
     `;
     return { companies: row?.companies ?? 0, wallets: row?.wallets ?? 0 };
 }
+
+export type DepositAddressRecord = {
+    symbol: string;
+    network: string;
+    address: string;
+    memo: string;
+    updated_at: string;
+    updated_by: string;
+};
+
+export async function listDepositAddresses(): Promise<DepositAddressRecord[]> {
+    return q<DepositAddressRecord>`
+        select symbol, network, address, memo, updated_at::text, updated_by
+        from deposit_addresses
+        order by symbol
+    `;
+}
+
+export async function getDepositAddress(symbol: string): Promise<DepositAddressRecord | null> {
+    return one<DepositAddressRecord>`
+        select symbol, network, address, memo, updated_at::text, updated_by
+        from deposit_addresses
+        where upper(symbol) = ${symbol.toUpperCase()}
+        limit 1
+    `;
+}
+

@@ -69,6 +69,12 @@ export function SignupForm() {
                 Already have an account?{' '}
                 <Link href="/login" className="link">Sign in</Link>
             </p>
+
+            <div className="pt-2 border-t border-hairline text-center">
+                <Link href="/register" className="text-xs font-semibold text-[#1e3a8a] hover:underline">
+                    Want to form your entity now? Go to Full Registration Form →
+                </Link>
+            </div>
         </form>
     );
 }

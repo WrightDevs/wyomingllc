@@ -3,54 +3,57 @@ import { Brand } from './Brand';
 
 export function SiteFooter() {
     return (
-        <footer id="contact" className="mt-20 border-t border-pine-900/10 bg-pine-950 text-pine-100">
+        <footer id="contact" className="bg-slate-900 text-white">
             <div className="shell grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
-                    <Brand tone="light" />
-                    <p className="mt-4 max-w-xs text-sm leading-relaxed text-pine-100/65">
+                    <div className="mb-4 flex items-center gap-3">
+                        <Brand tone="light" compact />
+                    </div>
+                    <p className="max-w-xs text-sm leading-relaxed text-slate-300">
                         Wyoming LLC filings, annual reports and records — with a read-only portfolio view attached to your account.
                     </p>
+                    <p className="mt-4 text-xs text-slate-400">1309 Coffeen Ave, Sheridan, WY 82801</p>
                 </div>
 
                 <div>
-                    <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-pine-100/40">Services</p>
-                    <ul className="mt-3 space-y-2 text-sm text-pine-100/75">
-                        <li><Link href="/#services" className="hover:text-white">LLC formation</Link></li>
-                        <li><Link href="/#services" className="hover:text-white">Registered agent</Link></li>
-                        <li><Link href="/#services" className="hover:text-white">EIN &amp; annual reports</Link></li>
-                        <li><Link href="/#pricing" className="hover:text-white">Pricing</Link></li>
+                    <p className="mb-4 text-lg font-bold text-white">Services</p>
+                    <ul className="mt-3 space-y-2 text-sm text-slate-300">
+                        <li><Link href="/#services" className="hover:text-orange-300 transition">LLC formation</Link></li>
+                        <li><Link href="/#services" className="hover:text-orange-300 transition">Registered agent</Link></li>
+                        <li><Link href="/#services" className="hover:text-orange-300 transition">EIN &amp; annual reports</Link></li>
+                        <li><Link href="/#pricing" className="hover:text-orange-300 transition">Pricing</Link></li>
                     </ul>
                 </div>
 
                 <div>
-                    <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-pine-100/40">Account</p>
-                    <ul className="mt-3 space-y-2 text-sm text-pine-100/75">
-                        <li><Link href="/login" className="hover:text-white">Sign in</Link></li>
-                        <li><Link href="/signup" className="hover:text-white">Create an account</Link></li>
-                        <li><Link href="/dashboard" className="hover:text-white">Client dashboard</Link></li>
-                        <li><Link href="/#faq" className="hover:text-white">Common questions</Link></li>
+                    <p className="mb-4 text-lg font-bold text-white">Account</p>
+                    <ul className="mt-3 space-y-2 text-sm text-slate-300">
+                        <li><Link href="/login" className="hover:text-orange-300 transition">Sign in</Link></li>
+                        <li><Link href="/signup" className="hover:text-orange-300 transition">Create an account</Link></li>
+                        <li><Link href="/dashboard" className="hover:text-orange-300 transition">Client dashboard</Link></li>
+                        <li><Link href="/#faq" className="hover:text-orange-300 transition">Common questions</Link></li>
                     </ul>
                 </div>
 
                 <div>
-                    <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-pine-100/40">Contact</p>
-                    <ul className="mt-3 space-y-2 text-sm text-pine-100/75">
+                    <p className="mb-4 text-lg font-bold text-white">Contact</p>
+                    <ul className="mt-3 space-y-2 text-sm text-slate-300">
                         <li>
-                            <a href="mailto:support@wyomingllclimited.xyz" className="hover:text-white">
+                            <a href="mailto:support@wyomingllclimited.xyz" className="hover:text-orange-300 transition">
                                 support@wyomingllclimited.xyz
                             </a>
                         </li>
                         <li>Monday–Friday, 9am–5pm MT</li>
-                        <li className="text-pine-100/50">www.wyomingllclimited.xyz</li>
+                        <li className="text-slate-400">www.wyomingllclimited.xyz</li>
                     </ul>
                 </div>
             </div>
 
-            <div className="border-t border-white/10">
-                <div className="shell flex flex-col gap-2 py-6 text-[12px] leading-relaxed text-pine-100/50 sm:flex-row sm:items-center sm:justify-between">
+            <div className="border-t border-slate-700">
+                <div className="shell flex flex-col gap-2 py-6 text-[12px] leading-relaxed text-slate-400 sm:flex-row sm:items-center sm:justify-between">
                     <p>© {new Date().getFullYear()} Wyoming LLC Attorney. All rights reserved.</p>
                     <p className="max-w-xl">
-                        Wyoming LLC Attorney is an independent filing service, is not a law firm, and does not give legal advice.
+                        wyomingllclimited.xyz is not a law firm and does not give legal advice.
                     </p>
                 </div>
             </div>

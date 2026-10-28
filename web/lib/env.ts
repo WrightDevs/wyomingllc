@@ -23,3 +23,7 @@ export function secret(): string | null {
     if (!value || value === 'replace-me-with-48-random-bytes') return null;
     return value;
 }
+
+export const RESEND_API_KEY = (process.env.RESEND_API_KEY || '').trim();
+export const EMAIL_FROM = (process.env.EMAIL_FROM || 'Wyoming Attorney <onboarding@resend.dev>').trim();
+

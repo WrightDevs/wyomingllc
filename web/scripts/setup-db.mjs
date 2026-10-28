@@ -5,8 +5,14 @@
  *
  *   npm run db:setup
  *
- * Reads DATABASE_URL, ADMIN_EMAIL, ADMIN_PASSWORD and ADMIN_NAME from the
- * environment. `npm run db:setup` already loads .env.local when it exists.
+ * Reads DATABASE_URL_UNPOOLED (preferred) or DATABASE_URL, plus ADMIN_EMAIL,
+ * ADMIN_PASSWORD and ADMIN_NAME from the environment. `npm run db:setup`
+ * already loads .env.local when it exists.
+ *
+ * DDL runs over the direct endpoint on purpose: the pooled PgBouncer connection
+ * can hand a backend over between statements, which breaks session state and
+ * multi-statement migrations. See the Neon `neon-postgres` skill.
+ *
  * Safe to re-run: every statement in the schema is idempotent.
  */
 import { readFile } from 'node:fs/promises';
@@ -22,10 +28,16 @@ function fail(message) {
     process.exit(1);
 }
 
-const databaseUrl = (process.env.DATABASE_URL || '').trim();
+const pooled = (process.env.DATABASE_URL || '').trim();
+const databaseUrl = (process.env.DATABASE_URL_UNPOOLED || pooled).trim();
 if (!databaseUrl || databaseUrl.includes('user:password@')) {
     fail(
-        'DATABASE_URL is not set. Copy web/.env.example to web/.env.local and paste the pooled Neon connection string.'
+        'DATABASE_URL is not set. Copy web/.env.example to web/.env.local and paste the Neon connection string, or run `neon env pull`.'
+    );
+}
+if (databaseUrl === pooled && databaseUrl.includes('-pooler.')) {
+    console.warn(
+        '\n! Only a pooled DATABASE_URL was found. Schema DDL is safer over the direct URL.\n'
     );
 }
 

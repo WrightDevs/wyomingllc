@@ -44,6 +44,14 @@ export async function registerAction(_prev: FormState, formData: FormData): Prom
         if (!result.ok) return { ok: false, message: result.error };
         const token = await createSession(result.userId);
         await setSessionCookie(token);
+
+        // Send email verification asynchronously
+        try {
+            const { createAndSendVerificationEmail } = await import('@/lib/email');
+            await createAndSendVerificationEmail(result.userId, email, displayName);
+        } catch (e) {
+            console.error('Failed to dispatch verification email:', e);
+        }
     } catch (error) {
         return { ok: false, message: friendlyError(error) };
     }
